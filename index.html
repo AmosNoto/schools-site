@@ -307,7 +307,7 @@
     <div class="sec-head">
       <span class="sec-tag">01 · The map</span>
       <h2 class="sec-title">Who's home on a given day</h2>
-      <p class="sec-note">Each pin is a campus, colored by school. Drag the date or tap a break to light up everyone who's off that day.</p>
+      <p class="sec-note">Each pin is a campus, colored by school. Drag the date or tap a break to light up everyone who's off that day. Drag from one pin to another on the map to measure the distance and driving time between them.</p>
     </div>
 
     <div class="scrubber">
@@ -335,7 +335,7 @@
     <div class="sec-head">
       <span class="sec-tag">02 · On the ground</span>
       <h2 class="sec-title">Every campus, on a real map</h2>
-      <p class="sec-note">Actual coordinates this time, no decluttering. Click a pin for who's there and where.</p>
+      <p class="sec-note">Actual coordinates this time, no decluttering. Click a pin for who's there and where — or drag from one pin to another to measure the distance and driving time between them.</p>
     </div>
     <div id="leaflet-map"></div>
   </section>
@@ -490,6 +490,88 @@ function schoolIcon(s,home){
   });
 }
 
+/* ---------- drag-to-measure tool ---------- */
+var measureCounter = 0;
+function fmtDuration(sec){
+  var totalMin = Math.round(sec/60);
+  var h = Math.floor(totalMin/60), m = totalMin%60;
+  if (h<=0) return m+' min';
+  return h+'h'+(m ? ' '+m+'m' : '');
+}
+function drawMeasureLine(map, a, b){
+  var line = L.polyline([[a.lat,a.lng],[b.lat,b.lng]], { color:'#c8962b', weight:3, opacity:0.85 }).addTo(map);
+  var straight = milesBetween(a,b);
+  var mid = L.latLng((a.lat+b.lat)/2, (a.lng+b.lng)/2);
+  var driveId = 'drive-'+(measureCounter++);
+  var popup = L.popup({ closeButton:true })
+    .setLatLng(mid)
+    .setContent(
+      '<div class="popup-school">'+a.school+' → '+b.school+'</div>'+
+      '<p class="popup-dist">'+straight+' mi straight-line</p>'+
+      '<p class="popup-dist" id="'+driveId+'">Calculating driving time…</p>'+
+      '<p class="popup-wiki"><a href="#" class="measure-remove">Remove line</a></p>'
+    )
+    .openOn(map);
+  var popupEl = popup.getElement();
+  var removeBtn = popupEl && popupEl.querySelector('.measure-remove');
+  if (removeBtn){
+    removeBtn.addEventListener('click', function(evt){
+      evt.preventDefault();
+      map.removeLayer(line);
+      map.closePopup(popup);
+    });
+  }
+  var url = 'https://router.project-osrm.org/route/v1/driving/'+a.lng+','+a.lat+';'+b.lng+','+b.lat+'?overview=false';
+  fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    var el = document.getElementById(driveId);
+    if (!el) return;
+    if (data && data.code==='Ok' && data.routes && data.routes[0]){
+      var miles = Math.round(data.routes[0].distance/1609.34);
+      el.textContent = miles+' mi, ~'+fmtDuration(data.routes[0].duration)+' driving';
+    } else {
+      el.textContent = 'Driving estimate unavailable';
+    }
+  }).catch(function(){
+    var el = document.getElementById(driveId);
+    if (el) el.textContent = 'Driving estimate unavailable';
+  });
+}
+function attachMeasureTool(map, entries){
+  var dragging=false, startSchool=null, tempLine=null;
+  function ll(s){ return L.latLng(s.lat, s.lng); }
+  function onMove(e){
+    if (!dragging || !tempLine) return;
+    tempLine.setLatLngs([ll(startSchool), e.latlng]);
+  }
+  function finish(endSchool){
+    if (!dragging) return;
+    dragging=false;
+    map.off('mousemove', onMove);
+    map.off('mouseup', onMapUp);
+    if (tempLine){ map.removeLayer(tempLine); tempLine=null; }
+    if (endSchool && startSchool && endSchool!==startSchool){
+      drawMeasureLine(map, startSchool, endSchool);
+    }
+    startSchool=null;
+  }
+  function onMapUp(){ finish(null); }
+  document.addEventListener('mouseup', function(){ if (dragging) finish(null); });
+  entries.forEach(function(entry){
+    entry.marker.on('mousedown', function(e){
+      if (e.originalEvent){ e.originalEvent.stopPropagation(); e.originalEvent.preventDefault(); }
+      startSchool = entry.s;
+      dragging = true;
+      tempLine = L.polyline([ll(entry.s), ll(entry.s)], { color:'#c8962b', weight:2, dashArray:'5,7', interactive:false }).addTo(map);
+      map.on('mousemove', onMove);
+      map.on('mouseup', onMapUp);
+    });
+    entry.marker.on('mouseup', function(e){
+      if (e.originalEvent) e.originalEvent.stopPropagation();
+      finish(entry.s);
+    });
+  });
+}
+
 /* ---------- live "who's home" map ---------- */
 var liveMap = L.map('map-live', { scrollWheelZoom: false }).setView([41.5, -76], 5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -502,6 +584,7 @@ SCHOOLS.forEach(function(s){
   liveBounds.push([s.lat, s.lng]);
 });
 if (liveBounds.length) liveMap.fitBounds(liveBounds, { padding: [24,24] });
+attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
 
 /* ---------- roster ---------- */
 var roster=document.getElementById('roster');
@@ -671,10 +754,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(refMap);
 var refBounds=[];
 SCHOOLS.forEach(function(s){
-  L.marker([s.lat, s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
+  s._refMarker = L.marker([s.lat, s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
   refBounds.push([s.lat, s.lng]);
 });
 if (refBounds.length) refMap.fitBounds(refBounds, { padding: [30,30] });
+attachMeasureTool(refMap, SCHOOLS.map(function(s){ return {s:s, marker:s._refMarker}; }));
 </script>
 </body>
 </html>
