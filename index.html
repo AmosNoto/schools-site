@@ -207,11 +207,6 @@
     font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.9rem;
     display: flex; align-items: center; gap: 7px; line-height: 1.15;
   }
-  .r-you {
-    font-family: 'Inter', sans-serif; font-size: 0.54rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    background: var(--ink); color: #fff; padding: 1px 5px; border-radius: 3px;
-  }
   .r-meta { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
   .r-status {
     font-family: 'Space Mono', monospace; font-size: 0.62rem;
@@ -300,10 +295,10 @@
   <header class="hero">
     <p class="eyebrow">A field guide to the group · 2026–27</p>
     <h1>Where is everyone, and when are we all home?</h1>
-    <p class="lede">Thirteen schools, one graduating class, scattered from Montréal to New Orleans. Drag through the school year to watch who heads home and when — and find the rare windows the whole group overlaps.</p>
+    <p class="lede">Fourteen schools, one graduating class, scattered from Montréal to New Orleans. Drag through the school year to watch who heads home and when — and find the rare windows the whole group overlaps.</p>
     <div class="hero-stats">
-      <div class="stat"><div class="n">13</div><div class="l">schools · 5 states, D.C. &amp; Québec</div></div>
-      <div class="stat"><div class="n">Dec 23–Jan 4</div><div class="l">the only stretch all 13 are home at once</div></div>
+      <div class="stat"><div class="n">14</div><div class="l">schools · 5 states, D.C. &amp; Québec</div></div>
+      <div class="stat"><div class="n">Dec 23–Jan 4</div><div class="l">the only stretch all 14 are home at once</div></div>
       <div class="stat"><div class="n">2</div><div class="l">people you can't catch on spring break</div></div>
     </div>
   </header>
@@ -353,7 +348,7 @@
     </div>
     <div class="tl-axis" id="tl-axis"></div>
     <div class="heatwrap">
-      <div class="heat-label">How many of the 13 are on break</div>
+      <div class="heat-label">How many of the 14 are on break</div>
       <div class="heat" id="heat"></div>
     </div>
     <div class="tlrows" id="tlrows">
@@ -381,7 +376,7 @@
   </section>
 
   <footer>
-    <p>Break windows are drawn from each registrar's published 2026–27 calendar and include the weekends that bracket each break. Princeton's winter-break end and Drew's full 2026–27 calendar weren't posted yet, so those (Evan's dates, and Princeton's January return) are projected from the current-year pattern — confirm before booking anything. McGill observes Canadian Thanksgiving in October, so Matteo is in class during U.S. Thanksgiving week.</p>
+    <p>Break windows are drawn from each registrar's published 2026–27 calendar and include the weekends that bracket each break. Princeton's winter-break end, Drew's full 2026–27 calendar, and Dartmouth's full D-Plan calendar weren't posted yet, so those (Evan's dates, Princeton's January return, and all of Gus's dates) are projected from typical-year patterns — confirm before booking anything. McGill observes Canadian Thanksgiving in October, so Matteo is in class during U.S. Thanksgiving week.</p>
   </footer>
 
 </div>
@@ -394,9 +389,14 @@ function pct(d){ return ((new Date(d) - START) / 86400000 / SPAN) * 100; }
 function dayToDate(i){ return new Date(START.getTime() + i*86400000); }
 function iso(d){ return d.toISOString().slice(0,10); }
 
+var PORTLAND_ME  = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
+var NYC          = { lat:40.7128, lng:-74.0060, label:'New York, NY' };
+var WINCHESTER_MA= { lat:42.4529, lng:-71.1489, label:'Winchester, MA' };
+
 var SCHOOLS = [
  { n:1,  school:'Skidmore',  who:'Amos, Bowdie',       color:'#2E7D45', color2:'#FFFFFF', me:true,
-   city:'Saratoga Springs, NY', lat:43.09, lng:-73.79, wiki:'https://en.wikipedia.org/wiki/Skidmore_College', breaks:[
+   city:'Saratoga Springs, NY', lat:43.09, lng:-73.79, wiki:'https://en.wikipedia.org/wiki/Skidmore_College',
+   refPoints:[PORTLAND_ME, WINCHESTER_MA], breaks:[
    {s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-26'},{s:'2027-03-13',e:'2027-03-21'}]},
  { n:2,  school:'Bowdoin',   who:'Lucy',               color:'#111111', color2:'#FFFFFF',
    city:'Brunswick, ME', lat:43.91, lng:-69.96, wiki:'https://en.wikipedia.org/wiki/Bowdoin_College', breaks:[
@@ -432,8 +432,12 @@ var SCHOOLS = [
    city:'Madison, NJ', lat:40.76, lng:-74.42, wiki:'https://en.wikipedia.org/wiki/Drew_University', breaks:[
    {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-19'},{s:'2027-03-15',e:'2027-03-21'}]},
  { n:13, school:'Princeton', who:'Louise',             color:'#E77500', color2:'#000000',
-   city:'Princeton, NJ', lat:40.35, lng:-74.66, wiki:'https://en.wikipedia.org/wiki/Princeton_University', breaks:[
-   {s:'2026-10-17',e:'2026-10-25'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-31'},{s:'2027-03-06',e:'2027-03-14'}]}
+   city:'Princeton, NJ', lat:40.35, lng:-74.66, wiki:'https://en.wikipedia.org/wiki/Princeton_University',
+   refPoints:[NYC], breaks:[
+   {s:'2026-10-17',e:'2026-10-25'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-31'},{s:'2027-03-06',e:'2027-03-14'}]},
+ { n:14, school:'Dartmouth', who:'Gus · projected',    color:'#00693E', color2:'#FFFFFF',
+   city:'Hanover, NH', lat:43.70, lng:-72.29, wiki:'https://en.wikipedia.org/wiki/Dartmouth_College', breaks:[
+   {s:'2026-11-21',e:'2027-01-05'},{s:'2027-03-13',e:'2027-03-28'}]}
 ];
 function diag(c1,c2){ return 'linear-gradient(135deg, '+c1+' 50%, '+c2+' 50%)'; }
 var TOTAL = SCHOOLS.length;
@@ -446,23 +450,25 @@ function inBreak(day, breaks){
 }
 
 /* ---------- shared marker helpers ---------- */
-var PORTLAND_ME = { lat:43.6591, lng:-70.2568 };
-function milesFromPortland(s){
+function milesBetween(a,b){
   var R=3958.8, toRad=function(d){ return d*Math.PI/180; };
-  var dLat=toRad(s.lat-PORTLAND_ME.lat), dLng=toRad(s.lng-PORTLAND_ME.lng);
-  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+
-        Math.cos(toRad(PORTLAND_ME.lat))*Math.cos(toRad(s.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);
-  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+  var dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
+  var x=Math.sin(dLat/2)*Math.sin(dLat/2)+
+        Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));
 }
 function schoolPopupHtml(s){
-  var whoTxt = s.who==='—' ? 'unassigned' : s.who + (s.me ? ' (you)' : '');
+  var whoTxt = s.who==='—' ? 'unassigned' : s.who;
   return '<div class="popup-school"><i class="popup-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div>'+
     '<p class="popup-who">'+whoTxt+'</p>'+
     '<p class="popup-city">'+s.city+'</p>';
 }
 function schoolPopupHtmlWithDistance(s){
-  return schoolPopupHtml(s)+
-    '<p class="popup-dist">'+milesFromPortland(s)+' mi from Portland, ME</p>'+
+  var points = s.refPoints || [PORTLAND_ME];
+  var distLines = points.map(function(p){
+    return '<p class="popup-dist">'+milesBetween(p,s)+' mi from '+p.label+'</p>';
+  }).join('');
+  return schoolPopupHtml(s) + distLines +
     '<p class="popup-wiki"><a href="'+s.wiki+'" target="_blank" rel="noopener">Wikipedia ↗</a></p>';
 }
 function staticSchoolIcon(s,size){
@@ -501,11 +507,10 @@ if (liveBounds.length) liveMap.fitBounds(liveBounds, { padding: [24,24] });
 var roster=document.getElementById('roster');
 SCHOOLS.forEach(function(s){
   var row=document.createElement('div'); row.className='r-row'; s._row=row;
-  var youTag = s.me ? '<span class="r-you">you</span>' : '';
   var whoTxt = s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
   row.innerHTML =
     '<span class="r-num" style="background:'+diag(s.color,s.color2)+'"></span>'+
-    '<div class="r-main"><div class="r-school">'+s.school+youTag+'</div>'+
+    '<div class="r-main"><div class="r-school">'+s.school+'</div>'+
       '<div class="r-meta">'+whoTxt+' · '+s.city+'</div></div>'+
     '<span class="r-status">—</span>';
   s._status=row.querySelector('.r-status');
@@ -572,9 +577,9 @@ while (p<=SPAN){
 
 /* ---------- findings ---------- */
 var findings=[
- ['Finding 01','One week, everyone','The only stretch where all thirteen are home at once is <em>Dec 23–Jan 4</em>, deep in winter break. Columbia is the last to leave (Dec 23) and Middlebury &amp; McGill are the first back (Jan 4) — that gap is your whole-group window. Circle it.'],
- ['Finding 02','Thanksgiving is twelve of thirteen','Nov 25–28 pulls everyone home <em>except Matteo</em> — McGill runs through U.S. Thanksgiving because Canada takes its Thanksgiving in October (that was his Oct 9–14 break). Still the easiest near-complete weekend of the fall.'],
- ['Finding 03','Spring break scatters worst','Yours (Mar 13–21) lines up with <em>George, Sasha, Lucy, Cosimo, and Evan</em>. But Matteo goes Mar 1–5, Princeton and the early crowd go Mar 6–14, and Mia (Mar 22–28) and Noah (Mar 20–Apr 4) go after you&rsquo;re back. <em>Mia and Matteo you can&rsquo;t catch at all.</em>'],
+ ['Finding 01','One week, everyone','The only stretch where all fourteen are home at once is <em>Dec 23–Jan 4</em>, deep in winter break. Columbia is the last to leave (Dec 23) and Middlebury &amp; McGill are the first back (Jan 4) — that gap is your whole-group window. Circle it.'],
+ ['Finding 02','Thanksgiving is thirteen of fourteen','Nov 25–28 pulls everyone home <em>except Matteo</em> — McGill runs through U.S. Thanksgiving because Canada takes its Thanksgiving in October (that was his Oct 9–14 break). Still the easiest near-complete weekend of the fall.'],
+ ['Finding 03','Spring break scatters worst','Yours (Mar 13–21) lines up with <em>George, Sasha, Lucy, Cosimo, Evan, and Gus</em>. But Matteo goes Mar 1–5, Princeton and the early crowd go Mar 6–14, and Mia (Mar 22–28) and Noah (Mar 20–Apr 4) go after you&rsquo;re back. <em>Mia and Matteo you can&rsquo;t catch at all.</em>'],
  ['Finding 04','October never syncs','Fall breaks are short and staggered, so the map barely warms up. Princeton&rsquo;s is the exception — a full nine days (Oct 17–25) — but it only brushes Middlebury, WPI, and Wesleyan around the 17th–20th.']
 ];
 var fEl=document.getElementById('findings');
@@ -588,7 +593,7 @@ findings.forEach(function(f){
 var dirBody=document.getElementById('dir-body');
 SCHOOLS.forEach(function(s){
   var tr=document.createElement('tr');
-  var whoTxt = s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : (s.who + (s.me?' (you)':''));
+  var whoTxt = s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
   var co = Math.abs(s.lat).toFixed(2)+'°N, '+Math.abs(s.lng).toFixed(2)+'°W';
   tr.innerHTML =
     '<td><span class="dir-school"><i class="dir-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</span></td>'+
