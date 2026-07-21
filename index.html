@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Where Everyone Is — 2026–27</title>
+<title>Where Everyone Is</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
@@ -57,28 +57,6 @@
     color: var(--muted);
     max-width: 54ch;
     margin: 0;
-  }
-  .hero-stats {
-    display: flex;
-    gap: 34px;
-    margin-top: 28px;
-    flex-wrap: wrap;
-  }
-  .stat .n {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    font-size: 2rem;
-    line-height: 1;
-    letter-spacing: -0.01em;
-  }
-  .stat .l {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-top: 6px;
-    max-width: 20ch;
   }
 
   /* ---------- section frame ---------- */
@@ -202,6 +180,7 @@
   }
 
   .roster { display: flex; flex-direction: column; gap: 0; }
+  .roster-empty { font-size: 0.86rem; color: var(--faint); padding: 10px 0; }
   .r-row {
     display: grid;
     grid-template-columns: 20px 1fr auto auto;
@@ -228,7 +207,7 @@
   .r-row.dim { opacity: 0.5; }
 
   /* ---------- row edit / delete controls (roster + directory) ---------- */
-  .r-actions, .dir-actions { display: flex; gap: 4px; white-space: nowrap; }
+  .r-actions, .dir-actions { display: flex; gap: 4px; white-space: nowrap; min-height: 24px; }
   .row-btn {
     width: 24px; height: 24px; border-radius: 6px;
     border: 1px solid var(--line); background: var(--panel);
@@ -238,60 +217,6 @@
   }
   .row-btn:hover { border-color: var(--gold); color: var(--ink); }
   .row-delete:hover { border-color: #b8483f; color: #b8483f; }
-
-  /* ---------- timeline ---------- */
-  .invert-btn {
-    font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
-    border: 1px solid var(--line); background: var(--panel); color: var(--muted);
-    padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-top: 14px;
-    transition: all 0.15s ease;
-  }
-  .invert-btn:hover { border-color: var(--gold); color: var(--ink); }
-  .invert-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
-
-  .tl-axis { position: relative; height: 18px; font-family: 'Space Mono', monospace;
-    font-size: 0.62rem; color: var(--faint); border-bottom: 1px solid var(--line);
-    margin-left: 150px; margin-bottom: 4px; }
-  .tl-axis span { position: absolute; transform: translateX(-50%); }
-
-  .heatwrap { margin-left: 150px; margin-bottom: 14px; }
-  .heat-label { font-family: 'Space Mono', monospace; font-size: 0.6rem;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 5px; }
-  .heat { position: relative; height: 20px; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
-  .heat .seg { position: absolute; top: 0; bottom: 0; }
-
-  .tlrows { position: relative; border-top: 1px solid var(--line); }
-  .tl-row { display: grid; grid-template-columns: 150px 1fr; align-items: center;
-    padding: 4px 0; border-bottom: 1px solid #ece5d6; }
-  .tl-label { min-width: 0; padding-right: 10px; }
-  .tl-school { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.8rem;
-    display: flex; align-items: center; gap: 6px; line-height: 1.1; }
-  .tl-sw { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
-  .tl-who { font-size: 0.64rem; color: var(--muted); margin-left: 15px; line-height: 1.25; }
-  .tl-track { position: relative; height: 18px; background: var(--panel);
-    border: 1px solid var(--line); border-radius: 3px; }
-  .tl-blk { position: absolute; top: 2px; bottom: 2px; border-radius: 2px; }
-  .tl-row.me { background: #fdf7e6; }
-  .playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--gold);
-    pointer-events: none; z-index: 5; }
-  .playhead::before { content: ''; position: absolute; top: -4px; left: -3px;
-    width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
-
-  /* ---------- findings ---------- */
-  .findings { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .find {
-    background: var(--panel); border: 1px solid var(--line);
-    border-radius: 8px; padding: 16px 18px;
-  }
-  .find .fn {
-    font-family: 'Space Mono', monospace; font-size: 0.66rem;
-    color: var(--gold); letter-spacing: 0.08em; margin-bottom: 8px;
-  }
-  .find h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.05rem;
-    margin: 0 0 7px; letter-spacing: -0.01em; }
-  .find p { margin: 0; font-size: 0.86rem; color: var(--muted); }
-  .find p em { color: var(--ink); font-style: normal; font-weight: 600; }
 
   /* ---------- directory ---------- */
   table.dir { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
@@ -304,8 +229,9 @@
   table.dir td.mono { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); }
   .dir-school { font-family: 'Fraunces', serif; font-weight: 600; display: flex; align-items: center; gap: 7px; }
   .dir-sw { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
+  .dir-empty { color: var(--faint); }
 
-  /* ---------- quick lookup / add / edit cards ---------- */
+  /* ---------- quick lookup / verify / add / edit cards ---------- */
   .lookup-card {
     background: var(--panel);
     border: 1px solid var(--line);
@@ -321,6 +247,7 @@
   .lookup-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.15rem; margin: 0 0 4px; }
   .lookup-note { font-size: 0.84rem; color: var(--muted); margin: 0; }
   .lookup-form { display: flex; align-items: flex-end; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  .lookup-form[hidden] { display: none; }
   .lookup-field { flex: 1 1 180px; min-width: 160px; display: flex; flex-direction: column; gap: 6px; }
   .lookup-field label {
     font-family: 'Space Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em;
@@ -332,6 +259,7 @@
     background: #fff; color: var(--ink); outline: none;
   }
   .lookup-field input:focus { border-color: var(--gold); }
+  .lookup-field input:disabled { background: #f1ede2; color: var(--faint); }
   .lookup-arrow { font-size: 1.2rem; color: var(--faint); padding-bottom: 9px; }
   .lookup-btn {
     font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
@@ -347,17 +275,18 @@
   }
   .lookup-cancel:hover { color: var(--ink); }
   .lookup-msg { font-size: 0.8rem; color: var(--gold); margin: 10px 0 0; min-height: 1.1em; }
+  .verified-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--ink);
+    background: #fdf7e6; border: 1px solid var(--line); border-radius: 20px;
+    padding: 6px 12px; margin-top: 14px;
+  }
 
   footer { padding: 28px 0 48px; }
   footer p { font-size: 0.72rem; color: var(--faint); margin: 0 0 6px; max-width: 78ch; }
 
   @media (max-width: 820px) {
     .map-grid { grid-template-columns: 1fr; }
-    .findings { grid-template-columns: 1fr; }
-    .tl-axis, .heatwrap { margin-left: 116px; }
-    .tl-row { grid-template-columns: 116px 1fr; }
-    .tl-school { font-size: 0.72rem; }
-    .tl-who { font-size: 0.58rem; margin-left: 0; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -367,14 +296,35 @@
 <div class="wrap">
 
   <header class="hero">
-    <p class="eyebrow">A field guide to the group · 2026–27</p>
-    <h1>Where is everyone, and when are we all home?</h1>
-    <p class="lede">One graduating class, scattered from Montréal to New Orleans. Drag through the school year to watch who heads home and when — and find the rare windows the whole group overlaps.</p>
-    <div class="hero-stats">
-      <div class="stat"><div class="n">Dec 23–Jan 4</div><div class="l">the only stretch the whole group is home at once</div></div>
-      <div class="stat"><div class="n">2</div><div class="l">people you can't catch on spring break</div></div>
-    </div>
+    <p class="eyebrow">A field guide to the group</p>
+    <h1>Where is everyone, and how far apart are we?</h1>
+    <p class="lede">Add yourself and your friends to build a shared-feeling map of where everyone landed — drop a pin, measure the distance and driving time between any two people, and look up the school along the way.</p>
   </header>
+
+  <div class="lookup-card">
+    <span class="lookup-tag" id="verify-tag">Step 1</span>
+    <h2 class="lookup-title" id="verify-title">Verify your email to add or edit anyone</h2>
+    <p class="lookup-note" id="verify-note">We'll email you a 6-digit code. That ties whatever you add to your email address, so only you can edit or remove it later — and you can always come back and re-verify to pick up where you left off.</p>
+
+    <form class="lookup-form" id="verify-email-form">
+      <div class="lookup-field">
+        <label for="verify-email">Email</label>
+        <input type="email" id="verify-email" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <button type="submit" class="lookup-btn" id="verify-send-btn">Send code</button>
+    </form>
+
+    <form class="lookup-form" id="verify-code-form" hidden>
+      <div class="lookup-field">
+        <label for="verify-code">6-digit code</label>
+        <input type="text" id="verify-code" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="123456" autocomplete="one-time-code">
+      </div>
+      <button type="submit" class="lookup-btn" id="verify-check-btn">Verify</button>
+      <button type="button" class="lookup-cancel" id="verify-resend-btn">Resend code</button>
+    </form>
+
+    <p class="lookup-msg" id="verify-msg"></p>
+  </div>
 
   <div class="lookup-card">
     <span class="lookup-tag">Quick lookup</span>
@@ -383,12 +333,12 @@
     <form class="lookup-form" id="lookup-form">
       <div class="lookup-field">
         <label for="lookup-from">Leaving from</label>
-        <input type="text" id="lookup-from" list="lookup-options" placeholder="e.g. Skidmore or Amos" autocomplete="off">
+        <input type="text" id="lookup-from" list="lookup-options" placeholder="e.g. a school or a name" autocomplete="off">
       </div>
       <div class="lookup-arrow">→</div>
       <div class="lookup-field">
         <label for="lookup-to">Going to</label>
-        <input type="text" id="lookup-to" list="lookup-options" placeholder="e.g. Princeton or Louise" autocomplete="off">
+        <input type="text" id="lookup-to" list="lookup-options" placeholder="e.g. a school or a name" autocomplete="off">
       </div>
       <button type="submit" class="lookup-btn">Show route</button>
     </form>
@@ -399,21 +349,21 @@
   <div class="lookup-card">
     <span class="lookup-tag">Add your own</span>
     <h2 class="lookup-title" id="add-card-title">Add someone who's not on the list</h2>
-    <p class="lookup-note" id="add-card-note">Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page. Sticks around across visits — edit or remove it anytime from the lists below.</p>
+    <p class="lookup-note" id="add-card-note">Verify your email above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.</p>
     <form class="lookup-form" id="add-form">
       <div class="lookup-field">
         <label for="add-name">Name</label>
-        <input type="text" id="add-name" placeholder="e.g. Priya" autocomplete="off">
+        <input type="text" id="add-name" placeholder="e.g. Priya" autocomplete="off" disabled>
       </div>
       <div class="lookup-field">
         <label for="add-school">School</label>
-        <input type="text" id="add-school" placeholder="e.g. University of Michigan" autocomplete="off">
+        <input type="text" id="add-school" placeholder="e.g. University of Michigan" autocomplete="off" disabled>
       </div>
       <div class="lookup-field">
         <label for="add-home">Where they're from</label>
-        <input type="text" id="add-home" placeholder="e.g. Denver, CO" autocomplete="off">
+        <input type="text" id="add-home" placeholder="e.g. Denver, CO" autocomplete="off" disabled>
       </div>
-      <button type="submit" class="lookup-btn" id="add-btn">Add to the map</button>
+      <button type="submit" class="lookup-btn" id="add-btn" disabled>Add to the map</button>
       <button type="button" class="lookup-cancel" id="add-cancel" hidden>Cancel edit</button>
     </form>
     <p class="lookup-msg" id="add-msg"></p>
@@ -423,14 +373,14 @@
     <div class="sec-head">
       <span class="sec-tag">01 · The map</span>
       <h2 class="sec-title">Who's home on a given day</h2>
-      <p class="sec-note">Each pin is a campus, colored by school. Drag the date or tap a break to light up everyone who's off that day. Click one pin, then another within 10 seconds, to measure the distance and driving time between them.</p>
+      <p class="sec-note">Each pin is a person, colored per entry. Click one pin, then another within 10 seconds, to measure the distance and driving time between them.</p>
     </div>
 
     <div class="scrubber">
       <div class="chips" id="chips"></div>
       <input type="range" id="slider" min="0" max="272" value="118">
       <div class="scrub-scale">
-        <span>Sep 2026</span><span>Nov</span><span>Jan 2027</span><span>Mar</span><span>May</span>
+        <span>Sep</span><span>Nov</span><span>Jan</span><span>Mar</span><span>May</span>
       </div>
     </div>
 
@@ -447,45 +397,20 @@
     </div>
   </section>
 
-  <section>
+  <section style="border-bottom:none;">
     <div class="sec-head">
       <span class="sec-tag">02 · On the ground</span>
       <h2 class="sec-title">Every campus, on a real map</h2>
-      <p class="sec-note">Actual coordinates this time, no decluttering. Click a pin for who's there and where, then click another within 10 seconds to measure the distance and driving time between them.</p>
+      <p class="sec-note">Actual coordinates, no decluttering. Click a pin for who's there and where, then click another within 10 seconds to measure the distance and driving time between them.</p>
     </div>
     <div id="leaflet-map"></div>
   </section>
 
-  <section>
-    <div class="sec-head">
-      <span class="sec-tag">03 · The year</span>
-      <h2 class="sec-title">Every break, side by side</h2>
-      <p class="sec-note">The strip up top runs hot when many schools are off at once. The gold line tracks the date you picked above.</p>
-      <button type="button" class="invert-btn" id="invert-timeline-btn">Invert colors</button>
-    </div>
-    <div class="tl-axis" id="tl-axis"></div>
-    <div class="heatwrap">
-      <div class="heat-label">How many are on break</div>
-      <div class="heat" id="heat"></div>
-    </div>
-    <div class="tlrows" id="tlrows">
-      <div class="playhead" id="playhead"></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head">
-      <span class="sec-tag">04 · What the calendar says</span>
-      <h2 class="sec-title">Four things worth planning around</h2>
-    </div>
-    <div class="findings" id="findings"></div>
-  </section>
-
   <section style="border-bottom:none;">
     <div class="sec-head">
-      <span class="sec-tag">05 · The roster</span>
+      <span class="sec-tag">03 · The roster</span>
       <h2 class="sec-title">Everyone, and where they landed</h2>
-      <p class="sec-note">Edit (✎) or remove (🗑) anyone here — changes stick around on this device.</p>
+      <p class="sec-note">Edit (✎) or remove (🗑) your own entry here — you'll only see those controls on entries tied to your verified email.</p>
     </div>
     <table class="dir">
       <thead><tr><th>School</th><th>Who</th><th>Where</th><th>Coords</th><th>Actions</th></tr></thead>
@@ -494,13 +419,21 @@
   </section>
 
   <footer>
-    <p>Break windows are drawn from each registrar's published 2026–27 calendar and include the weekends that bracket each break. Princeton's winter-break end, Drew's full 2026–27 calendar, and Dartmouth's full D-Plan calendar weren't posted yet, so those (Evan's dates, Princeton's January return, and all of Gus's dates) are projected from typical-year patterns — confirm before booking anything. McGill observes Canadian Thanksgiving in October, so Matteo is in class during U.S. Thanksgiving week.</p>
+    <p>Locations and driving times come from OpenStreetMap/Nominatim and OSRM; Wikipedia links are looked up automatically and might occasionally land on the wrong page for an ambiguous school name. Everything added here lives in your own browser's local storage, tied to whatever email you verify with — it isn't shared with other visitors, so what you see is only what's been added from this browser.</p>
   </footer>
 
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
+/* ---------- EmailJS config: replace these with real values from your EmailJS dashboard ---------- */
+var EMAILJS_PUBLIC_KEY = 'REPLACE_ME';
+var EMAILJS_SERVICE_ID = 'REPLACE_ME';
+var EMAILJS_TEMPLATE_ID = 'REPLACE_ME';
+var EMAILJS_CONFIGURED = EMAILJS_PUBLIC_KEY !== 'REPLACE_ME' && EMAILJS_SERVICE_ID !== 'REPLACE_ME' && EMAILJS_TEMPLATE_ID !== 'REPLACE_ME';
+if (EMAILJS_CONFIGURED && window.emailjs) emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
 /* ---------- date helpers ---------- */
 var START = new Date('2026-09-01'), END = new Date('2027-05-31');
 var SPAN = Math.round((END - START) / 86400000);
@@ -514,87 +447,28 @@ function inBreak(day, breaks){
   return false;
 }
 
-/* ---------- local persistence: additions, edits, and deletions survive a refresh ---------- */
-var STORAGE_KEY = 'where-everyone-is-v1';
+/* ---------- local persistence: everyone added, edited, or removed survives a refresh ---------- */
+var STORAGE_KEY = 'where-everyone-is-v2';
+var VERIFIED_EMAIL_KEY = 'where-everyone-is-verified-email';
 function loadState(){
   try {
     var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { customs:[], edits:{}, deletedCoreIds:[] };
+    if (!raw) return { entries: [] };
     var parsed = JSON.parse(raw);
-    return {
-      customs: Array.isArray(parsed.customs) ? parsed.customs : [],
-      edits: (parsed.edits && typeof parsed.edits === 'object') ? parsed.edits : {},
-      deletedCoreIds: Array.isArray(parsed.deletedCoreIds) ? parsed.deletedCoreIds : []
-    };
-  } catch(e){ return { customs:[], edits:{}, deletedCoreIds:[] }; }
+    return { entries: Array.isArray(parsed.entries) ? parsed.entries : [] };
+  } catch(e){ return { entries: [] }; }
 }
 function saveState(){
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); } catch(e){}
 }
 var STATE = loadState();
+var verifiedEmail = localStorage.getItem(VERIFIED_EMAIL_KEY) || null;
 
-/* ---------- named points used as distance references in popups ---------- */
-var PORTLAND_ME   = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
-var NYC           = { lat:40.7128, lng:-74.0060, label:'New York, NY' };
-var WINCHESTER_MA = { lat:42.4529, lng:-71.1489, label:'Winchester, MA' };
+/* ---------- default distance reference (used only if an entry somehow has none) ---------- */
+var PORTLAND_ME = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
 
-/* ---------- core school data (real calendars) ---------- */
-var CORE_SCHOOLS = [
- { id:'skidmore', school:'Skidmore',  who:'Amos, Bowdie',       color:'#2E7D45', color2:'#FFFFFF', me:true,
-   city:'Saratoga Springs, NY', lat:43.09, lng:-73.79, wiki:'https://en.wikipedia.org/wiki/Skidmore_College',
-   refPoints:[PORTLAND_ME, WINCHESTER_MA], breaks:[
-   {s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-26'},{s:'2027-03-13',e:'2027-03-21'}]},
- { id:'bowdoin', school:'Bowdoin',   who:'Lucy',               color:'#111111', color2:'#FFFFFF',
-   city:'Brunswick, ME', lat:43.91, lng:-69.96, wiki:'https://en.wikipedia.org/wiki/Bowdoin_College', breaks:[
-   {s:'2026-10-09',e:'2026-10-14'},{s:'2026-11-20',e:'2026-11-30'},{s:'2026-12-21',e:'2027-01-25'},{s:'2027-03-12',e:'2027-03-29'}]},
- { id:'tulane', school:'Tulane',    who:'Mia',                color:'#0089CF', color2:'#00723F',
-   city:'New Orleans, LA', lat:29.94, lng:-90.12, wiki:'https://en.wikipedia.org/wiki/Tulane_University', breaks:[
-   {s:'2026-10-01',e:'2026-10-04'},{s:'2026-11-23',e:'2026-11-29'},{s:'2026-12-12',e:'2027-01-11'},{s:'2027-02-08',e:'2027-02-09'},{s:'2027-03-22',e:'2027-03-28'}]},
- { id:'williams', school:'Williams',  who:'Noah',               color:'#500082', color2:'#FFC72C',
-   city:'Williamstown, MA', lat:42.71, lng:-73.20, wiki:'https://en.wikipedia.org/wiki/Williams_College', breaks:[
-   {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-21',e:'2027-01-05'},{s:'2027-01-29',e:'2027-02-03'},{s:'2027-03-20',e:'2027-04-04'}]},
- { id:'middlebury', school:'Middlebury',who:'Emma, Amelia, Finn', color:'#0D395F', color2:'#FFFFFF',
-   city:'Middlebury, VT', lat:44.01, lng:-73.17, wiki:'https://en.wikipedia.org/wiki/Middlebury_College', breaks:[
-   {s:'2026-10-16',e:'2026-10-18'},{s:'2026-11-20',e:'2026-11-29'},{s:'2026-12-21',e:'2027-01-04'},{s:'2027-01-30',e:'2027-02-07'},{s:'2027-03-19',e:'2027-03-28'}]},
- { id:'wpi', school:'WPI',       who:'Lincoln',            color:'#AC2B37', color2:'#A7A9AC',
-   city:'Worcester, MA', lat:42.27, lng:-71.81, wiki:'https://en.wikipedia.org/wiki/Worcester_Polytechnic_Institute', breaks:[
-   {s:'2026-10-10',e:'2026-10-18'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-12',e:'2027-01-12'},{s:'2027-03-06',e:'2027-03-14'}]},
- { id:'columbia', school:'Columbia',  who:'George',             color:'#6CACE4', color2:'#FFFFFF',
-   city:'New York, NY', lat:40.81, lng:-73.96, wiki:'https://en.wikipedia.org/wiki/Columbia_University', breaks:[
-   {s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-23',e:'2027-01-18'},{s:'2027-03-13',e:'2027-03-21'}]},
- { id:'mcgill', school:'McGill',    who:'Matteo',             color:'#ED1B2F', color2:'#FFFFFF',
-   city:'Montréal, QC', lat:45.50, lng:-73.58, wiki:'https://en.wikipedia.org/wiki/McGill_University', breaks:[
-   {s:'2026-10-09',e:'2026-10-14'},{s:'2026-12-22',e:'2027-01-04'},{s:'2027-03-01',e:'2027-03-05'}]},
- { id:'wesleyan', school:'Wesleyan',  who:'Cosimo',             color:'#7C0A02', color2:'#000000',
-   city:'Middletown, CT', lat:41.56, lng:-72.66, wiki:'https://en.wikipedia.org/wiki/Wesleyan_University', breaks:[
-   {s:'2026-10-19',e:'2026-10-20'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-20',e:'2027-01-20'},{s:'2027-03-06',e:'2027-03-21'}]},
- { id:'nyu', school:'NYU',       who:'Sasha',              color:'#8B5CF6', color2:'#FFFFFF',
-   city:'New York, NY', lat:40.73, lng:-73.997, wiki:'https://en.wikipedia.org/wiki/New_York_University', breaks:[
-   {s:'2026-10-12',e:'2026-10-12'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-18'},{s:'2027-03-13',e:'2027-03-21'}]},
- { id:'gw', school:'George Washington', who:'Elefe',      color:'#A69063', color2:'#00308F',
-   city:'Washington, D.C.', lat:38.90, lng:-77.05, wiki:'https://en.wikipedia.org/wiki/George_Washington_University', breaks:[
-   {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-23',e:'2026-11-28'},{s:'2026-12-17',e:'2027-01-10'},{s:'2027-03-08',e:'2027-03-13'}]},
- { id:'drew', school:'Drew',      who:'Evan · projected',   color:'#00838F', color2:'#F2A900',
-   city:'Madison, NJ', lat:40.76, lng:-74.42, wiki:'https://en.wikipedia.org/wiki/Drew_University', breaks:[
-   {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-19'},{s:'2027-03-15',e:'2027-03-21'}]},
- { id:'princeton', school:'Princeton', who:'Louise',             color:'#E77500', color2:'#000000',
-   city:'Princeton, NJ', lat:40.35, lng:-74.66, wiki:'https://en.wikipedia.org/wiki/Princeton_University',
-   refPoints:[NYC], breaks:[
-   {s:'2026-10-17',e:'2026-10-25'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-31'},{s:'2027-03-06',e:'2027-03-14'}]},
- { id:'dartmouth', school:'Dartmouth', who:'Gus · projected',    color:'#00693E', color2:'#FFFFFF',
-   city:'Hanover, NH', lat:43.70, lng:-72.29, wiki:'https://en.wikipedia.org/wiki/Dartmouth_College', breaks:[
-   {s:'2026-11-21',e:'2027-01-05'},{s:'2027-03-13',e:'2027-03-28'}]}
-];
-CORE_SCHOOLS = CORE_SCHOOLS.filter(function(s){ return STATE.deletedCoreIds.indexOf(s.id) === -1; });
-CORE_SCHOOLS.forEach(function(s){
-  var e = STATE.edits[s.id];
-  if (e) Object.assign(s, e);
-});
-var CORE_TOTAL = CORE_SCHOOLS.length; // used only for the heat-strip's internal color scaling, never shown as text
-
-var SCHOOLS = CORE_SCHOOLS.concat(STATE.customs.map(function(c){
-  return Object.assign({ breaks: [], custom: true }, c);
-}));
+/* ---------- the list starts empty; every entry comes from "Add your own" ---------- */
+var SCHOOLS = STATE.entries.map(function(e){ return Object.assign({ breaks: [] }, e); });
 
 /* ---------- school icon + popup helpers ---------- */
 function diag(c1,c2){ return 'linear-gradient(135deg, '+c1+' 50%, '+c2+' 50%)'; }
@@ -636,7 +510,7 @@ function schoolIcon(s,home){
   var size = home ? 26 : 16;
   var hit = size+14;
   var shadow = home
-    ? '0 0 0 3px #fff, 0 0 16px 4px '+s.color+'88, 0 2px 6px rgba(0,0,0,0.35)'
+    ? '0 0 0 3px #fff, 0 0 16px 4px '+s.color+'88, 0 2px 6px rgba(0,0,0,0.3)'
     : '0 1px 4px rgba(0,0,0,0.3)';
   return L.divIcon({
     className: '',
@@ -769,7 +643,11 @@ enablePinchZoom(refMap);
 function rowWhoText(s){
   return s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
 }
+function ownsEntry(s){
+  return !!verifiedEmail && s.ownerEmail === verifiedEmail;
+}
 function rowActionsHtml(s){
+  if (!ownsEntry(s)) return '<span class="r-actions"></span>';
   return '<span class="r-actions">'+
       '<button type="button" class="row-btn row-edit" data-id="'+s.id+'" title="Edit" aria-label="Edit">✎</button>'+
       '<button type="button" class="row-btn row-delete" data-id="'+s.id+'" title="Remove" aria-label="Remove">🗑</button>'+
@@ -798,111 +676,33 @@ function buildDirectoryRow(s){
     '<td class="dir-actions">'+rowActionsHtml(s)+'</td>';
   return tr;
 }
-var timelineInverted = false;
-function complementSegments(breaks, rangeStart, rangeEnd){
-  var sorted = breaks.map(function(b){ return { s:new Date(b.s), e:new Date(b.e) }; })
-    .sort(function(a,b){ return a.s - b.s; });
-  var segments = [];
-  var cursor = rangeStart;
-  sorted.forEach(function(b){
-    if (b.s > cursor) segments.push({ s:cursor, e:new Date(b.s.getTime()-86400000) });
-    if (b.e.getTime()+86400000 > cursor.getTime()) cursor = new Date(b.e.getTime()+86400000);
-  });
-  if (cursor <= rangeEnd) segments.push({ s:cursor, e:rangeEnd });
-  return segments.filter(function(seg){ return seg.s <= seg.e; })
-    .map(function(seg){ return { s:iso(seg.s), e:iso(seg.e) }; });
-}
-function buildTimelineRow(s){
-  var row = document.createElement('div'); row.className = 'tl-row'+(s.me?' me':''); row.dataset.id = s.id;
-  var label = document.createElement('div'); label.className = 'tl-label';
-  label.innerHTML = '<div class="tl-school"><i class="tl-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div><div class="tl-who">'+(s.who==='—'?'unassigned':s.who)+'</div>';
-  var track = document.createElement('div'); track.className = 'tl-track';
-  var segments = timelineInverted ? complementSegments(s.breaks, START, END) : s.breaks;
-  var segMeaning = timelineInverted ? 'in session' : 'break';
-  segments.forEach(function(b){
-    var blk = document.createElement('div'); blk.className = 'tl-blk';
-    blk.style.left = pct(b.s)+'%';
-    blk.style.width = Math.max(pct(b.e)-pct(b.s),0.5)+'%';
-    blk.style.background = s.color;
-    blk.title = s.school+' ('+segMeaning+'): '+b.s+' → '+b.e;
-    track.appendChild(blk);
-  });
-  row.appendChild(label); row.appendChild(track);
-  return row;
+function renderEmptyStates(){
+  var rosterEmpty = document.getElementById('roster-empty');
+  if (rosterEmpty) rosterEmpty.remove();
+  if (!SCHOOLS.length){
+    var div = document.createElement('div'); div.id = 'roster-empty'; div.className = 'roster-empty';
+    div.textContent = 'No one on the list yet — verify your email above and add the first pin.';
+    roster.appendChild(div);
+  }
+  var dirEmpty = document.getElementById('dir-empty');
+  if (dirEmpty) dirEmpty.remove();
+  if (!SCHOOLS.length){
+    var tr = document.createElement('tr'); tr.id = 'dir-empty';
+    tr.innerHTML = '<td colspan="5" class="dir-empty">No one on the list yet.</td>';
+    dirBody.appendChild(tr);
+  }
 }
 
 /* ---------- roster ---------- */
 var roster = document.getElementById('roster');
 SCHOOLS.forEach(function(s){ roster.appendChild(buildRosterRow(s)); });
 
-/* ---------- timeline ---------- */
-var tlAxis=document.getElementById('tl-axis');
-[['Sep','2026-09-01'],['Oct','2026-10-01'],['Nov','2026-11-01'],['Dec','2026-12-01'],['Jan','2027-01-01'],['Feb','2027-02-01'],['Mar','2027-03-01'],['Apr','2027-04-01'],['May','2027-05-01']].forEach(function(m){
-  var sp=document.createElement('span'); sp.style.left=pct(m[1])+'%'; sp.textContent=m[0]; tlAxis.appendChild(sp);
-});
-var tlrows=document.getElementById('tlrows');
-var playhead=document.getElementById('playhead');
-SCHOOLS.forEach(function(s){ tlrows.appendChild(buildTimelineRow(s)); });
-
-var invertTimelineBtn = document.getElementById('invert-timeline-btn');
-invertTimelineBtn.addEventListener('click', function(){
-  timelineInverted = !timelineInverted;
-  invertTimelineBtn.textContent = timelineInverted ? 'Show breaks in color' : 'Invert colors';
-  invertTimelineBtn.classList.toggle('active', timelineInverted);
-  tlrows.querySelectorAll('.tl-row').forEach(function(row){ row.remove(); });
-  SCHOOLS.forEach(function(s){ tlrows.appendChild(buildTimelineRow(s)); });
-});
-
-/* ---------- heat strip ---------- */
-var counts=[];
-for (var i=0;i<=SPAN;i++){
-  var day=dayToDate(i);
-  var c=0; SCHOOLS.forEach(function(s){ if (inBreak(day,s.breaks)) c++; });
-  counts.push(c);
-}
-function heatColor(n){
-  if (n<=0) return null;
-  var t=Math.min(n/CORE_TOTAL,1);
-  var stops=[[0,[244,238,222]],[0.34,[236,205,128]],[0.67,[214,140,60]],[1,[150,52,32]]];
-  var lo=stops[0],hi=stops[stops.length-1];
-  for (var k=0;k<stops.length-1;k++){ if(t>=stops[k][0]&&t<=stops[k+1][0]){lo=stops[k];hi=stops[k+1];} }
-  var f=(t-lo[0])/((hi[0]-lo[0])||1);
-  var c=lo[1].map(function(v,idx){return Math.round(v+(hi[1][idx]-v)*f);});
-  return 'rgb('+c[0]+','+c[1]+','+c[2]+')';
-}
-var heat=document.getElementById('heat');
-var p=0;
-while (p<=SPAN){
-  var n=counts[p], q=p;
-  while (q<=SPAN && counts[q]===n) q++;
-  if (n>0){
-    var seg=document.createElement('div'); seg.className='seg';
-    seg.style.left=pct(iso(dayToDate(p)))+'%';
-    seg.style.width=Math.max(pct(iso(dayToDate(q-1)))-pct(iso(dayToDate(p)))+(100/SPAN),0.3)+'%';
-    seg.style.background=heatColor(n);
-    seg.title=n+' on break';
-    heat.appendChild(seg);
-  }
-  p=q;
-}
-
-/* ---------- findings ---------- */
-var findings=[
- ['Finding 01','One week, everyone','The only stretch where the whole group is home at once is <em>Dec 23–Jan 4</em>, deep in winter break. Columbia is the last to leave (Dec 23) and Middlebury &amp; McGill are the first back (Jan 4) — that gap is your whole-group window. Circle it.'],
- ['Finding 02','Thanksgiving is almost everyone','Nov 25–28 pulls everyone home <em>except Matteo</em> — McGill runs through U.S. Thanksgiving because Canada takes its Thanksgiving in October (that was his Oct 9–14 break). Still the easiest near-complete weekend of the fall.'],
- ['Finding 03','Spring break scatters worst','Yours (Mar 13–21) lines up with <em>George, Sasha, Lucy, Cosimo, Evan, and Gus</em>. But Matteo goes Mar 1–5, Princeton and the early crowd go Mar 6–14, and Mia (Mar 22–28) and Noah (Mar 20–Apr 4) go after you&rsquo;re back. <em>Mia and Matteo you can&rsquo;t catch at all.</em>'],
- ['Finding 04','October never syncs','Fall breaks are short and staggered, so the map barely warms up. Princeton&rsquo;s is the exception — a full nine days (Oct 17–25) — but it only brushes Middlebury, WPI, and Wesleyan around the 17th–20th.']
-];
-var fEl=document.getElementById('findings');
-findings.forEach(function(f){
-  var d=document.createElement('div'); d.className='find';
-  d.innerHTML='<div class="fn">'+f[0]+'</div><h3>'+f[1]+'</h3><p>'+f[2]+'</p>';
-  fEl.appendChild(d);
-});
+var tlAxisUnused = null; // (kept intentionally blank -- no per-day timeline in this version)
 
 /* ---------- directory ---------- */
 var dirBody=document.getElementById('dir-body');
 SCHOOLS.forEach(function(s){ dirBody.appendChild(buildDirectoryRow(s)); });
+renderEmptyStates();
 
 /* ---------- interactivity ---------- */
 var slider=document.getElementById('slider');
@@ -940,8 +740,6 @@ function update(){
   });
   roDate.textContent=fmtDate(day);
   roCount.textContent = homeCount+' home';
-  var base = window.matchMedia('(max-width:820px)').matches ? 116 : 150;
-  playhead.style.left='calc('+base+'px + '+(pct(iso(day))/100)+' * (100% - '+base+'px))';
   document.querySelectorAll('.chip').forEach(function(ch){
     ch.classList.toggle('active', parseInt(ch.getAttribute('data-day'),10)===idx);
   });
@@ -994,9 +792,131 @@ lookupForm.addEventListener('submit', function(e){
   document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
 });
 
+/* ---------- verify email: send a 6-digit code, check it, remember the email on this device ---------- */
+function generateCode(){
+  return String(Math.floor(100000 + Math.random()*900000));
+}
+var pendingVerification = null; // { email, code, expiresAt }
+var CODE_TTL_MS = 10 * 60 * 1000;
+
+var verifyEmailForm = document.getElementById('verify-email-form');
+var verifyCodeForm = document.getElementById('verify-code-form');
+var verifyEmailInput = document.getElementById('verify-email');
+var verifyCodeInput = document.getElementById('verify-code');
+var verifyMsg = document.getElementById('verify-msg');
+var verifySendBtn = document.getElementById('verify-send-btn');
+var verifyResendBtn = document.getElementById('verify-resend-btn');
+var verifyTag = document.getElementById('verify-tag');
+var verifyTitle = document.getElementById('verify-title');
+var verifyNote = document.getElementById('verify-note');
+var VERIFY_DEFAULT_NOTE = verifyNote.textContent;
+
+function sendCode(email){
+  var code = generateCode();
+  pendingVerification = { email: email, code: code, expiresAt: Date.now() + CODE_TTL_MS };
+  if (!EMAILJS_CONFIGURED){
+    return Promise.reject(new Error('not configured'));
+  }
+  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: email, code: code });
+}
+
+verifyEmailForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  var email = verifyEmailInput.value.trim();
+  if (!email) return;
+  if (!EMAILJS_CONFIGURED){
+    verifyMsg.textContent = 'Email sending isn’t configured on this site yet.';
+    return;
+  }
+  verifyMsg.textContent = 'Sending…';
+  verifySendBtn.disabled = true;
+  sendCode(email).then(function(){
+    verifyMsg.textContent = 'Code sent — check '+email+'.';
+    verifySendBtn.disabled = false;
+    verifyEmailForm.hidden = true;
+    verifyCodeForm.hidden = false;
+    verifyCodeInput.value = '';
+    verifyCodeInput.focus();
+  }).catch(function(){
+    verifySendBtn.disabled = false;
+    verifyMsg.textContent = 'Couldn’t send that email — try again.';
+  });
+});
+
+verifyCodeForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  if (!pendingVerification){ verifyMsg.textContent = 'Request a new code first.'; return; }
+  if (Date.now() > pendingVerification.expiresAt){ verifyMsg.textContent = 'That code expired — send a new one.'; return; }
+  if (verifyCodeInput.value.trim() !== pendingVerification.code){ verifyMsg.textContent = 'That code doesn’t match.'; return; }
+  var email = pendingVerification.email;
+  pendingVerification = null;
+  setVerifiedEmail(email);
+});
+
+verifyResendBtn.addEventListener('click', function(){
+  if (!pendingVerification) return;
+  verifyMsg.textContent = 'Sending…';
+  sendCode(pendingVerification.email).then(function(){
+    verifyMsg.textContent = 'New code sent.';
+  }).catch(function(){
+    verifyMsg.textContent = 'Couldn’t send that email — try again.';
+  });
+});
+
+function setAddFormEnabled(enabled){
+  ['add-name','add-school','add-home'].forEach(function(id){ document.getElementById(id).disabled = !enabled; });
+  addBtn.disabled = !enabled;
+}
+function refreshAllRowsForOwnership(){
+  SCHOOLS.forEach(function(s){
+    var newRoster = buildRosterRow(s);
+    var oldRoster = document.querySelector('#roster [data-id="'+s.id+'"]');
+    if (oldRoster) oldRoster.replaceWith(newRoster);
+    var newDir = buildDirectoryRow(s);
+    var oldDir = document.querySelector('#dir-body [data-id="'+s.id+'"]');
+    if (oldDir) oldDir.replaceWith(newDir);
+  });
+  update();
+}
+function renderVerifyCard(){
+  if (verifiedEmail){
+    verifyEmailForm.hidden = true;
+    verifyCodeForm.hidden = true;
+    verifyTag.textContent = 'Verified';
+    verifyTitle.textContent = 'You can add, edit, or remove your own entries';
+    verifyNote.innerHTML = 'Verified as <strong>'+verifiedEmail+'</strong>. <button type="button" class="lookup-cancel" id="verify-switch-btn" style="padding:0;">Not you? Switch email</button>';
+    var switchBtn = document.getElementById('verify-switch-btn');
+    if (switchBtn) switchBtn.addEventListener('click', clearVerifiedEmail);
+  } else {
+    verifyEmailForm.hidden = false;
+    verifyCodeForm.hidden = true;
+    verifyTag.textContent = 'Step 1';
+    verifyTitle.textContent = 'Verify your email to add or edit anyone';
+    verifyNote.textContent = VERIFY_DEFAULT_NOTE;
+  }
+}
+function setVerifiedEmail(email){
+  verifiedEmail = email;
+  localStorage.setItem(VERIFIED_EMAIL_KEY, email);
+  renderVerifyCard();
+  setAddFormEnabled(true);
+  addCardNote.textContent = "Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
+  refreshAllRowsForOwnership();
+  verifyMsg.textContent = '';
+}
+function clearVerifiedEmail(){
+  verifiedEmail = null;
+  localStorage.removeItem(VERIFIED_EMAIL_KEY);
+  renderVerifyCard();
+  setAddFormEnabled(false);
+  addCardNote.textContent = "Verify your email above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
+  if (editingId) cancelEdit();
+  refreshAllRowsForOwnership();
+}
+
 /* ---------- add / edit: geocode a school + hometown, drop a pin, look up Wikipedia ---------- */
 var CUSTOM_PALETTE = ['#7A5C61','#3C6E71','#8E6C88','#5B7B4F','#9C6644','#4C5B61','#375D81','#8A4B4B'];
-var customPaletteIdx = 0;
+var paletteIdx = 0;
 
 function geocode(query){
   var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(query);
@@ -1018,7 +938,7 @@ function wikiLookup(query){
   });
 }
 function persistFields(s){
-  return { id:s.id, school:s.school, who:s.who, city:s.city, lat:s.lat, lng:s.lng, color:s.color, color2:s.color2, wiki:s.wiki, refPoints:s.refPoints };
+  return { id:s.id, school:s.school, who:s.who, city:s.city, lat:s.lat, lng:s.lng, color:s.color, color2:s.color2, wiki:s.wiki, refPoints:s.refPoints, ownerEmail:s.ownerEmail };
 }
 function homeLabelOf(s){
   return (s.refPoints && s.refPoints[0]) ? s.refPoints[0].label : 'Portland, ME';
@@ -1030,8 +950,8 @@ function renderSchoolEverywhere(s){
   refMeasure.register({ s:s, marker:s._refMarker });
   roster.appendChild(buildRosterRow(s));
   dirBody.appendChild(buildDirectoryRow(s));
-  tlrows.appendChild(buildTimelineRow(s));
   addToLookupIndex(s);
+  renderEmptyStates();
 }
 function refreshSchoolEverywhere(s){
   s._marker.setLatLng([s.lat, s.lng]);
@@ -1054,10 +974,11 @@ function deleteSchoolEverywhere(s){
   refMap.removeLayer(s._refMarker);
   var idx = SCHOOLS.indexOf(s);
   if (idx >= 0) SCHOOLS.splice(idx,1);
-  ['#roster','#dir-body','#tlrows'].forEach(function(sel){
+  ['#roster','#dir-body'].forEach(function(sel){
     var el = document.querySelector(sel+' [data-id="'+s.id+'"]');
     if (el) el.remove();
   });
+  renderEmptyStates();
 }
 
 var editingId = null;
@@ -1068,11 +989,11 @@ var addCancelBtn = document.getElementById('add-cancel');
 var addCardTitle = document.getElementById('add-card-title');
 var addCardNote = document.getElementById('add-card-note');
 var ADD_DEFAULT_TITLE = addCardTitle.textContent;
-var ADD_DEFAULT_NOTE = addCardNote.textContent;
 
 function startEdit(id){
   var s = SCHOOLS.find(function(x){ return x.id === id; });
   if (!s) return;
+  if (!ownsEntry(s)){ alert('Only the person who added this can edit it.'); return; }
   editingId = id;
   document.getElementById('add-name').value = s.who==='—' ? '' : s.who;
   document.getElementById('add-school').value = s.school;
@@ -1088,7 +1009,9 @@ function cancelEdit(){
   editingId = null;
   addForm.reset();
   addCardTitle.textContent = ADD_DEFAULT_TITLE;
-  addCardNote.textContent = ADD_DEFAULT_NOTE;
+  addCardNote.textContent = verifiedEmail
+    ? "Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page."
+    : "Verify your email above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
   addBtn.textContent = 'Add to the map';
   addCancelBtn.hidden = true;
   addMsg.textContent = '';
@@ -1106,15 +1029,11 @@ function handleRowAction(e){
     var id = delTarget.dataset.id;
     var s = SCHOOLS.find(function(x){ return x.id === id; });
     if (!s) return;
+    if (!ownsEntry(s)){ alert('Only the person who added this can remove it.'); return; }
     var label = (s.who && s.who !== '—') ? (s.who+' at '+s.school) : s.school;
     if (!confirm('Remove '+label+' from the list?')) return;
     deleteSchoolEverywhere(s);
-    if (s.custom){
-      STATE.customs = STATE.customs.filter(function(c){ return c.id !== id; });
-    } else {
-      if (STATE.deletedCoreIds.indexOf(id) === -1) STATE.deletedCoreIds.push(id);
-      delete STATE.edits[id];
-    }
+    STATE.entries = STATE.entries.filter(function(en){ return en.id !== id; });
     saveState();
     if (editingId === id) cancelEdit();
     update();
@@ -1125,6 +1044,10 @@ dirBody.addEventListener('click', handleRowAction);
 
 addForm.addEventListener('submit', function(e){
   e.preventDefault();
+  if (!verifiedEmail){
+    addMsg.textContent = 'Verify your email above first.';
+    return;
+  }
   var name = document.getElementById('add-name').value.trim();
   var schoolName = document.getElementById('add-school').value.trim();
   var homeName = document.getElementById('add-home').value.trim();
@@ -1134,6 +1057,10 @@ addForm.addEventListener('submit', function(e){
   }
 
   var existing = editingId ? SCHOOLS.find(function(x){ return x.id === editingId; }) : null;
+  if (existing && !ownsEntry(existing)){
+    addMsg.textContent = 'Only the person who added this can edit it.';
+    return;
+  }
   var schoolUnchanged = existing && existing.school === schoolName;
   var homeUnchanged = existing && homeLabelOf(existing) === homeName;
 
@@ -1146,7 +1073,7 @@ addForm.addEventListener('submit', function(e){
 
   Promise.all([schoolPromise, homePromise, wikiPromise]).then(function(results){
     var schoolLoc = results[0], homeLoc = results[1], wikiUrl = results[2];
-    addBtn.disabled = false;
+    addBtn.disabled = !verifiedEmail;
     if (!schoolLoc){ addMsg.textContent = 'Couldn’t find "'+schoolName+'" on the map.'; return; }
     if (homeLoc !== 'unchanged' && !homeLoc){ addMsg.textContent = 'Couldn’t find "'+homeName+'" on the map.'; return; }
 
@@ -1156,25 +1083,21 @@ addForm.addEventListener('submit', function(e){
     if (existing){
       Object.assign(existing, changes);
       refreshSchoolEverywhere(existing);
-      if (existing.custom){
-        var c = STATE.customs.find(function(x){ return x.id === existing.id; });
-        if (c) Object.assign(c, persistFields(existing));
-      } else {
-        STATE.edits[existing.id] = Object.assign(STATE.edits[existing.id] || {}, changes);
-      }
+      var rec = STATE.entries.find(function(x){ return x.id === existing.id; });
+      if (rec) Object.assign(rec, persistFields(existing));
       saveState();
       addMsg.textContent = 'Saved.';
       update();
       cancelEdit();
     } else {
       var s = Object.assign({
-        id: 'custom-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-        color: CUSTOM_PALETTE[customPaletteIdx++ % CUSTOM_PALETTE.length], color2: '#FFFFFF',
-        breaks: [], custom: true
+        id: 'p-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+        color: CUSTOM_PALETTE[paletteIdx++ % CUSTOM_PALETTE.length], color2: '#FFFFFF',
+        breaks: [], ownerEmail: verifiedEmail
       }, changes);
       SCHOOLS.push(s);
       renderSchoolEverywhere(s);
-      STATE.customs.push(persistFields(s));
+      STATE.entries.push(persistFields(s));
       saveState();
       addMsg.textContent = 'Added '+name+' at '+schoolName+'.';
       addForm.reset();
@@ -1183,10 +1106,13 @@ addForm.addEventListener('submit', function(e){
       document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
     }
   }).catch(function(){
-    addBtn.disabled = false;
+    addBtn.disabled = !verifiedEmail;
     addMsg.textContent = 'Something went wrong looking that up — try again.';
   });
 });
+
+renderVerifyCard();
+setAddFormEnabled(!!verifiedEmail);
 </script>
 </body>
 </html>
