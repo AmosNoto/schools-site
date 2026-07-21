@@ -240,6 +240,15 @@
   .row-delete:hover { border-color: #b8483f; color: #b8483f; }
 
   /* ---------- timeline ---------- */
+  .invert-btn {
+    font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
+    border: 1px solid var(--line); background: var(--panel); color: var(--muted);
+    padding: 6px 12px; border-radius: 20px; cursor: pointer; margin-top: 14px;
+    transition: all 0.15s ease;
+  }
+  .invert-btn:hover { border-color: var(--gold); color: var(--ink); }
+  .invert-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
   .tl-axis { position: relative; height: 18px; font-family: 'Space Mono', monospace;
     font-size: 0.62rem; color: var(--faint); border-bottom: 1px solid var(--line);
     margin-left: 150px; margin-bottom: 4px; }
@@ -452,6 +461,7 @@
       <span class="sec-tag">03 · The year</span>
       <h2 class="sec-title">Every break, side by side</h2>
       <p class="sec-note">The strip up top runs hot when many schools are off at once. The gold line tracks the date you picked above.</p>
+      <button type="button" class="invert-btn" id="invert-timeline-btn">Invert colors</button>
     </div>
     <div class="tl-axis" id="tl-axis"></div>
     <div class="heatwrap">
@@ -788,17 +798,33 @@ function buildDirectoryRow(s){
     '<td class="dir-actions">'+rowActionsHtml(s)+'</td>';
   return tr;
 }
+var timelineInverted = false;
+function complementSegments(breaks, rangeStart, rangeEnd){
+  var sorted = breaks.map(function(b){ return { s:new Date(b.s), e:new Date(b.e) }; })
+    .sort(function(a,b){ return a.s - b.s; });
+  var segments = [];
+  var cursor = rangeStart;
+  sorted.forEach(function(b){
+    if (b.s > cursor) segments.push({ s:cursor, e:new Date(b.s.getTime()-86400000) });
+    if (b.e.getTime()+86400000 > cursor.getTime()) cursor = new Date(b.e.getTime()+86400000);
+  });
+  if (cursor <= rangeEnd) segments.push({ s:cursor, e:rangeEnd });
+  return segments.filter(function(seg){ return seg.s <= seg.e; })
+    .map(function(seg){ return { s:iso(seg.s), e:iso(seg.e) }; });
+}
 function buildTimelineRow(s){
   var row = document.createElement('div'); row.className = 'tl-row'+(s.me?' me':''); row.dataset.id = s.id;
   var label = document.createElement('div'); label.className = 'tl-label';
   label.innerHTML = '<div class="tl-school"><i class="tl-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div><div class="tl-who">'+(s.who==='—'?'unassigned':s.who)+'</div>';
   var track = document.createElement('div'); track.className = 'tl-track';
-  s.breaks.forEach(function(b){
+  var segments = timelineInverted ? complementSegments(s.breaks, START, END) : s.breaks;
+  var segMeaning = timelineInverted ? 'in session' : 'break';
+  segments.forEach(function(b){
     var blk = document.createElement('div'); blk.className = 'tl-blk';
     blk.style.left = pct(b.s)+'%';
     blk.style.width = Math.max(pct(b.e)-pct(b.s),0.5)+'%';
     blk.style.background = s.color;
-    blk.title = s.school+': '+b.s+' → '+b.e;
+    blk.title = s.school+' ('+segMeaning+'): '+b.s+' → '+b.e;
     track.appendChild(blk);
   });
   row.appendChild(label); row.appendChild(track);
@@ -817,6 +843,15 @@ var tlAxis=document.getElementById('tl-axis');
 var tlrows=document.getElementById('tlrows');
 var playhead=document.getElementById('playhead');
 SCHOOLS.forEach(function(s){ tlrows.appendChild(buildTimelineRow(s)); });
+
+var invertTimelineBtn = document.getElementById('invert-timeline-btn');
+invertTimelineBtn.addEventListener('click', function(){
+  timelineInverted = !timelineInverted;
+  invertTimelineBtn.textContent = timelineInverted ? 'Show breaks in color' : 'Invert colors';
+  invertTimelineBtn.classList.toggle('active', timelineInverted);
+  tlrows.querySelectorAll('.tl-row').forEach(function(row){ row.remove(); });
+  SCHOOLS.forEach(function(s){ tlrows.appendChild(buildTimelineRow(s)); });
+});
 
 /* ---------- heat strip ---------- */
 var counts=[];
