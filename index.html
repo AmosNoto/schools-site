@@ -303,24 +303,15 @@
 
   <div class="lookup-card">
     <span class="lookup-tag" id="verify-tag">Step 1</span>
-    <h2 class="lookup-title" id="verify-title">Verify your email to add or edit anyone</h2>
-    <p class="lookup-note" id="verify-note">We'll email you a 6-digit code. That ties whatever you add to your email address, so only you can edit or remove it later — and you can always come back and re-verify to pick up where you left off.</p>
+    <h2 class="lookup-title" id="verify-title">Sign in to add or edit anyone</h2>
+    <p class="lookup-note" id="verify-note">We'll email you a magic link — click it and you're back here, signed in. That ties whatever you add to your email address, so only you can edit or remove it later, from any device.</p>
 
     <form class="lookup-form" id="verify-email-form">
       <div class="lookup-field">
         <label for="verify-email">Email</label>
         <input type="email" id="verify-email" placeholder="you@example.com" autocomplete="email" required>
       </div>
-      <button type="submit" class="lookup-btn" id="verify-send-btn">Send code</button>
-    </form>
-
-    <form class="lookup-form" id="verify-code-form" hidden>
-      <div class="lookup-field">
-        <label for="verify-code">6-digit code</label>
-        <input type="text" id="verify-code" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="123456" autocomplete="one-time-code">
-      </div>
-      <button type="submit" class="lookup-btn" id="verify-check-btn">Verify</button>
-      <button type="button" class="lookup-cancel" id="verify-resend-btn">Resend code</button>
+      <button type="submit" class="lookup-btn" id="verify-send-btn">Send magic link</button>
     </form>
 
     <p class="lookup-msg" id="verify-msg"></p>
@@ -349,7 +340,7 @@
   <div class="lookup-card">
     <span class="lookup-tag">Add your own</span>
     <h2 class="lookup-title" id="add-card-title">Add someone who's not on the list</h2>
-    <p class="lookup-note" id="add-card-note">Verify your email above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.</p>
+    <p class="lookup-note" id="add-card-note">Sign in above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.</p>
     <form class="lookup-form" id="add-form">
       <div class="lookup-field">
         <label for="add-name">Name</label>
@@ -410,7 +401,7 @@
     <div class="sec-head">
       <span class="sec-tag">03 · The roster</span>
       <h2 class="sec-title">Everyone, and where they landed</h2>
-      <p class="sec-note">Edit (✎) or remove (🗑) your own entry here — you'll only see those controls on entries tied to your verified email.</p>
+      <p class="sec-note">Edit (✎) or remove (🗑) your own entry here — you'll only see those controls on entries tied to your signed-in email.</p>
     </div>
     <table class="dir">
       <thead><tr><th>School</th><th>Who</th><th>Where</th><th>Coords</th><th>Actions</th></tr></thead>
@@ -419,20 +410,19 @@
   </section>
 
   <footer>
-    <p>Locations and driving times come from OpenStreetMap/Nominatim and OSRM; Wikipedia links are looked up automatically and might occasionally land on the wrong page for an ambiguous school name. Everything added here lives in your own browser's local storage, tied to whatever email you verify with — it isn't shared with other visitors, so what you see is only what's been added from this browser.</p>
+    <p>Locations and driving times come from OpenStreetMap/Nominatim and OSRM; Wikipedia links are looked up automatically and might occasionally land on the wrong page for an ambiguous school name. This roster is shared — sign in with a magic link to add yourself, and everyone sees the same list. Only you can edit or remove your own entry.</p>
   </footer>
 
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-/* ---------- EmailJS config: replace these with real values from your EmailJS dashboard ---------- */
-var EMAILJS_PUBLIC_KEY = 'REPLACE_ME';
-var EMAILJS_SERVICE_ID = 'REPLACE_ME';
-var EMAILJS_TEMPLATE_ID = 'REPLACE_ME';
-var EMAILJS_CONFIGURED = EMAILJS_PUBLIC_KEY !== 'REPLACE_ME' && EMAILJS_SERVICE_ID !== 'REPLACE_ME' && EMAILJS_TEMPLATE_ID !== 'REPLACE_ME';
-if (EMAILJS_CONFIGURED && window.emailjs) emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+/* ---------- Supabase config: replace these with the values from Settings > API in your Supabase project ---------- */
+var SUPABASE_URL = 'https://xbnsatnbyulnmwwtgtic.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_KcPmBLrlz_67MnGzmw4j3g_SkXXgqbA';
+var SUPABASE_CONFIGURED = SUPABASE_URL !== 'REPLACE_ME' && SUPABASE_ANON_KEY !== 'REPLACE_ME';
+var sb = SUPABASE_CONFIGURED ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 /* ---------- date helpers ---------- */
 var START = new Date('2026-09-01'), END = new Date('2027-05-31');
@@ -447,28 +437,27 @@ function inBreak(day, breaks){
   return false;
 }
 
-/* ---------- local persistence: everyone added, edited, or removed survives a refresh ---------- */
-var STORAGE_KEY = 'where-everyone-is-v2';
-var VERIFIED_EMAIL_KEY = 'where-everyone-is-verified-email';
-function loadState(){
-  try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { entries: [] };
-    var parsed = JSON.parse(raw);
-    return { entries: Array.isArray(parsed.entries) ? parsed.entries : [] };
-  } catch(e){ return { entries: [] }; }
-}
-function saveState(){
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); } catch(e){}
-}
-var STATE = loadState();
-var verifiedEmail = localStorage.getItem(VERIFIED_EMAIL_KEY) || null;
-
 /* ---------- default distance reference (used only if an entry somehow has none) ---------- */
 var PORTLAND_ME = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
 
-/* ---------- the list starts empty; every entry comes from "Add your own" ---------- */
-var SCHOOLS = STATE.entries.map(function(e){ return Object.assign({ breaks: [] }, e); });
+/* ---------- the list starts empty; every entry is fetched from Supabase, shared by everyone ---------- */
+var SCHOOLS = [];
+function rowToSchool(row){
+  return {
+    id: row.id, school: row.school, who: row.who, city: row.city,
+    lat: row.lat, lng: row.lng, color: row.color, color2: row.color2,
+    wiki: row.wiki, refPoints: row.ref_points,
+    ownerId: row.owner_id, ownerEmail: row.owner_email,
+    breaks: []
+  };
+}
+function schoolToRow(s){
+  return {
+    id: s.id, school: s.school, who: s.who, city: s.city,
+    lat: s.lat, lng: s.lng, color: s.color, color2: s.color2,
+    wiki: s.wiki, ref_points: s.refPoints
+  };
+}
 
 /* ---------- school icon + popup helpers ---------- */
 function diag(c1,c2){ return 'linear-gradient(135deg, '+c1+' 50%, '+c2+' 50%)'; }
@@ -625,17 +614,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
 }).addTo(refMap);
 
-SCHOOLS.forEach(function(s){
-  s._marker = L.marker([s.lat, s.lng], { icon: schoolIcon(s,false) }).addTo(liveMap).bindPopup(schoolPopupHtmlWithDistance(s));
-  s._refMarker = L.marker([s.lat, s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
-});
-var initialBounds = SCHOOLS.map(function(s){ return [s.lat, s.lng]; });
-if (initialBounds.length){
-  liveMap.fitBounds(initialBounds, { padding: [24,24] });
-  refMap.fitBounds(initialBounds, { padding: [30,30] });
-}
-var liveMeasure = attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
-var refMeasure = attachMeasureTool(refMap, SCHOOLS.map(function(s){ return {s:s, marker:s._refMarker}; }));
+var liveMeasure = attachMeasureTool(liveMap, []);
+var refMeasure = attachMeasureTool(refMap, []);
 enablePinchZoom(liveMap);
 enablePinchZoom(refMap);
 
@@ -644,7 +624,7 @@ function rowWhoText(s){
   return s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
 }
 function ownsEntry(s){
-  return !!verifiedEmail && s.ownerEmail === verifiedEmail;
+  return !!currentUser && s.ownerId === currentUser.id;
 }
 function rowActionsHtml(s){
   if (!ownsEntry(s)) return '<span class="r-actions"></span>';
@@ -681,7 +661,7 @@ function renderEmptyStates(){
   if (rosterEmpty) rosterEmpty.remove();
   if (!SCHOOLS.length){
     var div = document.createElement('div'); div.id = 'roster-empty'; div.className = 'roster-empty';
-    div.textContent = 'No one on the list yet — verify your email above and add the first pin.';
+    div.textContent = 'No one on the list yet — sign in above and add the first pin.';
     roster.appendChild(div);
   }
   var dirEmpty = document.getElementById('dir-empty');
@@ -693,15 +673,9 @@ function renderEmptyStates(){
   }
 }
 
-/* ---------- roster ---------- */
+/* ---------- roster + directory (populated once entries load from Supabase) ---------- */
 var roster = document.getElementById('roster');
-SCHOOLS.forEach(function(s){ roster.appendChild(buildRosterRow(s)); });
-
-var tlAxisUnused = null; // (kept intentionally blank -- no per-day timeline in this version)
-
-/* ---------- directory ---------- */
 var dirBody=document.getElementById('dir-body');
-SCHOOLS.forEach(function(s){ dirBody.appendChild(buildDirectoryRow(s)); });
 renderEmptyStates();
 
 /* ---------- interactivity ---------- */
@@ -793,73 +767,34 @@ lookupForm.addEventListener('submit', function(e){
 });
 
 /* ---------- verify email: send a 6-digit code, check it, remember the email on this device ---------- */
-function generateCode(){
-  return String(Math.floor(100000 + Math.random()*900000));
-}
-var pendingVerification = null; // { email, code, expiresAt }
-var CODE_TTL_MS = 10 * 60 * 1000;
-
 var verifyEmailForm = document.getElementById('verify-email-form');
-var verifyCodeForm = document.getElementById('verify-code-form');
 var verifyEmailInput = document.getElementById('verify-email');
-var verifyCodeInput = document.getElementById('verify-code');
 var verifyMsg = document.getElementById('verify-msg');
 var verifySendBtn = document.getElementById('verify-send-btn');
-var verifyResendBtn = document.getElementById('verify-resend-btn');
 var verifyTag = document.getElementById('verify-tag');
 var verifyTitle = document.getElementById('verify-title');
 var verifyNote = document.getElementById('verify-note');
 var VERIFY_DEFAULT_NOTE = verifyNote.textContent;
 
-function sendCode(email){
-  var code = generateCode();
-  pendingVerification = { email: email, code: code, expiresAt: Date.now() + CODE_TTL_MS };
-  if (!EMAILJS_CONFIGURED){
-    return Promise.reject(new Error('not configured'));
-  }
-  return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: email, code: code });
-}
+var currentUser = null; // { id, email } once signed in via magic link
 
 verifyEmailForm.addEventListener('submit', function(e){
   e.preventDefault();
   var email = verifyEmailInput.value.trim();
   if (!email) return;
-  if (!EMAILJS_CONFIGURED){
-    verifyMsg.textContent = 'Email sending isn’t configured on this site yet.';
+  if (!SUPABASE_CONFIGURED){
+    verifyMsg.textContent = 'Sign-in isn’t configured on this site yet.';
     return;
   }
   verifyMsg.textContent = 'Sending…';
   verifySendBtn.disabled = true;
-  sendCode(email).then(function(){
-    verifyMsg.textContent = 'Code sent — check '+email+'.';
+  sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: window.location.href } }).then(function(res){
     verifySendBtn.disabled = false;
-    verifyEmailForm.hidden = true;
-    verifyCodeForm.hidden = false;
-    verifyCodeInput.value = '';
-    verifyCodeInput.focus();
-  }).catch(function(){
-    verifySendBtn.disabled = false;
-    verifyMsg.textContent = 'Couldn’t send that email — try again.';
-  });
-});
-
-verifyCodeForm.addEventListener('submit', function(e){
-  e.preventDefault();
-  if (!pendingVerification){ verifyMsg.textContent = 'Request a new code first.'; return; }
-  if (Date.now() > pendingVerification.expiresAt){ verifyMsg.textContent = 'That code expired — send a new one.'; return; }
-  if (verifyCodeInput.value.trim() !== pendingVerification.code){ verifyMsg.textContent = 'That code doesn’t match.'; return; }
-  var email = pendingVerification.email;
-  pendingVerification = null;
-  setVerifiedEmail(email);
-});
-
-verifyResendBtn.addEventListener('click', function(){
-  if (!pendingVerification) return;
-  verifyMsg.textContent = 'Sending…';
-  sendCode(pendingVerification.email).then(function(){
-    verifyMsg.textContent = 'New code sent.';
-  }).catch(function(){
-    verifyMsg.textContent = 'Couldn’t send that email — try again.';
+    if (res.error){
+      verifyMsg.textContent = 'Couldn’t send that email — try again.';
+      return;
+    }
+    verifyMsg.textContent = 'Magic link sent — check '+email+' and click it to come back signed in.';
   });
 });
 
@@ -879,39 +814,47 @@ function refreshAllRowsForOwnership(){
   update();
 }
 function renderVerifyCard(){
-  if (verifiedEmail){
+  if (currentUser){
     verifyEmailForm.hidden = true;
-    verifyCodeForm.hidden = true;
-    verifyTag.textContent = 'Verified';
+    verifyTag.textContent = 'Signed in';
     verifyTitle.textContent = 'You can add, edit, or remove your own entries';
-    verifyNote.innerHTML = 'Verified as <strong>'+verifiedEmail+'</strong>. <button type="button" class="lookup-cancel" id="verify-switch-btn" style="padding:0;">Not you? Switch email</button>';
+    verifyNote.innerHTML = 'Signed in as <strong>'+currentUser.email+'</strong>. <button type="button" class="lookup-cancel" id="verify-switch-btn" style="padding:0;">Not you? Sign out</button>';
     var switchBtn = document.getElementById('verify-switch-btn');
-    if (switchBtn) switchBtn.addEventListener('click', clearVerifiedEmail);
+    if (switchBtn) switchBtn.addEventListener('click', function(){ sb.auth.signOut(); });
   } else {
     verifyEmailForm.hidden = false;
-    verifyCodeForm.hidden = true;
     verifyTag.textContent = 'Step 1';
-    verifyTitle.textContent = 'Verify your email to add or edit anyone';
+    verifyTitle.textContent = 'Sign in to add or edit anyone';
     verifyNote.textContent = VERIFY_DEFAULT_NOTE;
   }
 }
-function setVerifiedEmail(email){
-  verifiedEmail = email;
-  localStorage.setItem(VERIFIED_EMAIL_KEY, email);
+function onSignedIn(user){
+  currentUser = user;
   renderVerifyCard();
   setAddFormEnabled(true);
   addCardNote.textContent = "Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
   refreshAllRowsForOwnership();
   verifyMsg.textContent = '';
 }
-function clearVerifiedEmail(){
-  verifiedEmail = null;
-  localStorage.removeItem(VERIFIED_EMAIL_KEY);
+function onSignedOut(){
+  currentUser = null;
   renderVerifyCard();
   setAddFormEnabled(false);
-  addCardNote.textContent = "Verify your email above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
+  addCardNote.textContent = "Sign in above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
   if (editingId) cancelEdit();
   refreshAllRowsForOwnership();
+}
+if (SUPABASE_CONFIGURED){
+  sb.auth.onAuthStateChange(function(event, session){
+    if (session && session.user){
+      onSignedIn({ id: session.user.id, email: session.user.email });
+      if (window.location.hash || window.location.search){
+        history.replaceState(null, '', window.location.pathname);
+      }
+    } else {
+      onSignedOut();
+    }
+  });
 }
 
 /* ---------- add / edit: geocode a school + hometown, drop a pin, look up Wikipedia ---------- */
@@ -936,9 +879,6 @@ function wikiLookup(query){
   }).catch(function(){
     return 'https://en.wikipedia.org/w/index.php?search=' + encodeURIComponent(query);
   });
-}
-function persistFields(s){
-  return { id:s.id, school:s.school, who:s.who, city:s.city, lat:s.lat, lng:s.lng, color:s.color, color2:s.color2, wiki:s.wiki, refPoints:s.refPoints, ownerEmail:s.ownerEmail };
 }
 function homeLabelOf(s){
   return (s.refPoints && s.refPoints[0]) ? s.refPoints[0].label : 'Portland, ME';
@@ -1009,9 +949,9 @@ function cancelEdit(){
   editingId = null;
   addForm.reset();
   addCardTitle.textContent = ADD_DEFAULT_TITLE;
-  addCardNote.textContent = verifiedEmail
+  addCardNote.textContent = currentUser
     ? "Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page."
-    : "Verify your email above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
+    : "Sign in above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
   addBtn.textContent = 'Add to the map';
   addCancelBtn.hidden = true;
   addMsg.textContent = '';
@@ -1032,11 +972,12 @@ function handleRowAction(e){
     if (!ownsEntry(s)){ alert('Only the person who added this can remove it.'); return; }
     var label = (s.who && s.who !== '—') ? (s.who+' at '+s.school) : s.school;
     if (!confirm('Remove '+label+' from the list?')) return;
-    deleteSchoolEverywhere(s);
-    STATE.entries = STATE.entries.filter(function(en){ return en.id !== id; });
-    saveState();
-    if (editingId === id) cancelEdit();
-    update();
+    sb.from('entries').delete().eq('id', id).then(function(res){
+      if (res.error){ alert('Couldn’t remove that — try again.'); return; }
+      deleteSchoolEverywhere(s);
+      if (editingId === id) cancelEdit();
+      update();
+    });
   }
 }
 roster.addEventListener('click', handleRowAction);
@@ -1044,8 +985,8 @@ dirBody.addEventListener('click', handleRowAction);
 
 addForm.addEventListener('submit', function(e){
   e.preventDefault();
-  if (!verifiedEmail){
-    addMsg.textContent = 'Verify your email above first.';
+  if (!currentUser){
+    addMsg.textContent = 'Sign in above first.';
     return;
   }
   var name = document.getElementById('add-name').value.trim();
@@ -1073,46 +1014,70 @@ addForm.addEventListener('submit', function(e){
 
   Promise.all([schoolPromise, homePromise, wikiPromise]).then(function(results){
     var schoolLoc = results[0], homeLoc = results[1], wikiUrl = results[2];
-    addBtn.disabled = !verifiedEmail;
-    if (!schoolLoc){ addMsg.textContent = 'Couldn’t find "'+schoolName+'" on the map.'; return; }
-    if (homeLoc !== 'unchanged' && !homeLoc){ addMsg.textContent = 'Couldn’t find "'+homeName+'" on the map.'; return; }
+    if (!schoolLoc){ addBtn.disabled = !currentUser; addMsg.textContent = 'Couldn’t find "'+schoolName+'" on the map.'; return; }
+    if (homeLoc !== 'unchanged' && !homeLoc){ addBtn.disabled = !currentUser; addMsg.textContent = 'Couldn’t find "'+homeName+'" on the map.'; return; }
 
     var refPoints = (homeLoc === 'unchanged') ? existing.refPoints : [{ lat:homeLoc.lat, lng:homeLoc.lng, label:homeName }];
     var changes = { who:name, school:schoolName, city:schoolLoc.label, lat:schoolLoc.lat, lng:schoolLoc.lng, wiki:wikiUrl, refPoints:refPoints };
 
     if (existing){
-      Object.assign(existing, changes);
-      refreshSchoolEverywhere(existing);
-      var rec = STATE.entries.find(function(x){ return x.id === existing.id; });
-      if (rec) Object.assign(rec, persistFields(existing));
-      saveState();
-      addMsg.textContent = 'Saved.';
-      update();
-      cancelEdit();
+      var updated = Object.assign({}, existing, changes);
+      sb.from('entries').update(schoolToRow(updated)).eq('id', existing.id).then(function(res){
+        addBtn.disabled = !currentUser;
+        if (res.error){ addMsg.textContent = 'Couldn’t save — try again.'; return; }
+        Object.assign(existing, changes);
+        refreshSchoolEverywhere(existing);
+        addMsg.textContent = 'Saved.';
+        update();
+        cancelEdit();
+      });
     } else {
       var s = Object.assign({
         id: 'p-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
         color: CUSTOM_PALETTE[paletteIdx++ % CUSTOM_PALETTE.length], color2: '#FFFFFF',
-        breaks: [], ownerEmail: verifiedEmail
+        breaks: [], ownerId: currentUser.id, ownerEmail: currentUser.email
       }, changes);
-      SCHOOLS.push(s);
-      renderSchoolEverywhere(s);
-      STATE.entries.push(persistFields(s));
-      saveState();
-      addMsg.textContent = 'Added '+name+' at '+schoolName+'.';
-      addForm.reset();
-      liveMap.panTo([s.lat, s.lng]);
-      update();
-      document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
+      var row = Object.assign(schoolToRow(s), { owner_id: s.ownerId, owner_email: s.ownerEmail });
+      sb.from('entries').insert(row).then(function(res){
+        addBtn.disabled = !currentUser;
+        if (res.error){ addMsg.textContent = 'Couldn’t save — try again.'; return; }
+        SCHOOLS.push(s);
+        renderSchoolEverywhere(s);
+        addMsg.textContent = 'Added '+name+' at '+schoolName+'.';
+        addForm.reset();
+        liveMap.panTo([s.lat, s.lng]);
+        update();
+        document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
+      });
     }
   }).catch(function(){
-    addBtn.disabled = !verifiedEmail;
+    addBtn.disabled = !currentUser;
     addMsg.textContent = 'Something went wrong looking that up — try again.';
   });
 });
 
+/* ---------- load the shared roster from Supabase ---------- */
+function loadEntries(){
+  if (!SUPABASE_CONFIGURED){ renderEmptyStates(); return; }
+  sb.from('entries').select('*').order('created_at', { ascending:true }).then(function(res){
+    if (res.error){ console.error(res.error); renderEmptyStates(); return; }
+    (res.data || []).forEach(function(row){
+      var s = rowToSchool(row);
+      SCHOOLS.push(s);
+      renderSchoolEverywhere(s);
+    });
+    if (SCHOOLS.length){
+      var bounds = SCHOOLS.map(function(s){ return [s.lat, s.lng]; });
+      liveMap.fitBounds(bounds, { padding:[24,24] });
+      refMap.fitBounds(bounds, { padding:[30,30] });
+    }
+    update();
+  });
+}
+
 renderVerifyCard();
-setAddFormEnabled(!!verifiedEmail);
+setAddFormEnabled(false);
+loadEntries();
 </script>
 </body>
 </html>
