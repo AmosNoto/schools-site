@@ -471,22 +471,29 @@ function schoolPopupHtmlWithDistance(s){
   return schoolPopupHtml(s) + distLines +
     '<p class="popup-wiki"><a href="'+s.wiki+'" target="_blank" rel="noopener">Wikipedia ↗</a></p>';
 }
+function hitWrap(hit,size,inner){
+  var pad = (hit-size)/2;
+  return '<div style="width:'+hit+'px;height:'+hit+'px;position:relative;">'+
+    '<div style="position:absolute;left:'+pad+'px;top:'+pad+'px;'+inner+'"></div></div>';
+}
 function staticSchoolIcon(s,size){
+  var hit = size+14;
   return L.divIcon({
     className: '',
-    html: '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35);"></div>',
-    iconSize: [size,size], iconAnchor: [size/2,size/2], popupAnchor: [0,-size/2]
+    html: hitWrap(hit,size,'width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35);'),
+    iconSize: [hit,hit], iconAnchor: [hit/2,hit/2], popupAnchor: [0,-size/2]
   });
 }
 function schoolIcon(s,home){
   var size = home ? 26 : 16;
+  var hit = size+14;
   var shadow = home
     ? '0 0 0 3px #fff, 0 0 16px 4px '+s.color+'88, 0 2px 6px rgba(0,0,0,0.35)'
     : '0 1px 4px rgba(0,0,0,0.3)';
   return L.divIcon({
     className: '',
-    html: '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;opacity:'+(home?1:0.55)+';box-shadow:'+shadow+';"></div>',
-    iconSize: [size,size], iconAnchor: [size/2,size/2], popupAnchor: [0,-size/2-2]
+    html: hitWrap(hit,size,'width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;opacity:'+(home?1:0.55)+';box-shadow:'+shadow+';'),
+    iconSize: [hit,hit], iconAnchor: [hit/2,hit/2], popupAnchor: [0,-size/2-2]
   });
 }
 
@@ -508,7 +515,7 @@ function drawMeasureLine(map, a, b){
     .setContent(
       '<div class="popup-school">'+a.school+' → '+b.school+'</div>'+
       '<p class="popup-dist">'+straight+' mi straight-line</p>'+
-      '<p class="popup-dist" id="'+driveId+'">Calculating driving time…</p>'+
+      '<p class="popup-dist" id="'+driveId+'">Calculating driving route…</p>'+
       '<p class="popup-wiki"><a href="#" class="measure-remove">Remove line</a></p>'
     )
     .openOn(map);
@@ -521,14 +528,17 @@ function drawMeasureLine(map, a, b){
       map.closePopup(popup);
     });
   }
-  var url = 'https://router.project-osrm.org/route/v1/driving/'+a.lng+','+a.lat+';'+b.lng+','+b.lat+'?overview=false';
+  var url = 'https://router.project-osrm.org/route/v1/driving/'+a.lng+','+a.lat+';'+b.lng+','+b.lat+'?overview=simplified&geometries=geojson';
   fetch(url).then(function(r){ return r.json(); }).then(function(data){
     var el = document.getElementById(driveId);
-    if (!el) return;
     if (data && data.code==='Ok' && data.routes && data.routes[0]){
-      var miles = Math.round(data.routes[0].distance/1609.34);
-      el.textContent = miles+' mi, ~'+fmtDuration(data.routes[0].duration)+' driving';
-    } else {
+      var route = data.routes[0];
+      var miles = Math.round(route.distance/1609.34);
+      if (el) el.textContent = miles+' mi, ~'+fmtDuration(route.duration)+' driving';
+      if (route.geometry && route.geometry.coordinates){
+        line.setLatLngs(route.geometry.coordinates.map(function(c){ return [c[1], c[0]]; }));
+      }
+    } else if (el) {
       el.textContent = 'Driving estimate unavailable';
     }
   }).catch(function(){
@@ -571,6 +581,15 @@ function attachMeasureTool(map, entries){
     });
   });
 }
+function enablePinchZoom(map){
+  map.getContainer().addEventListener('wheel', function(e){
+    if (!e.ctrlKey) return; // trackpad pinch (and ctrl+scroll) send ctrlKey:true; plain scroll is left alone
+    e.preventDefault();
+    var point = map.mouseEventToContainerPoint(e);
+    var zoom = map.getZoom() - e.deltaY * 0.015;
+    map.setZoomAround(point, zoom, { animate:false });
+  }, { passive:false });
+}
 
 /* ---------- live "who's home" map ---------- */
 var liveMap = L.map('map-live', { scrollWheelZoom: false }).setView([41.5, -76], 5);
@@ -585,6 +604,7 @@ SCHOOLS.forEach(function(s){
 });
 if (liveBounds.length) liveMap.fitBounds(liveBounds, { padding: [24,24] });
 attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
+enablePinchZoom(liveMap);
 
 /* ---------- roster ---------- */
 var roster=document.getElementById('roster');
@@ -759,6 +779,7 @@ SCHOOLS.forEach(function(s){
 });
 if (refBounds.length) refMap.fitBounds(refBounds, { padding: [30,30] });
 attachMeasureTool(refMap, SCHOOLS.map(function(s){ return {s:s, marker:s._refMarker}; }));
+enablePinchZoom(refMap);
 </script>
 </body>
 </html>
