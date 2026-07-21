@@ -576,6 +576,7 @@ function attachMeasureTool(map, entries){
       map.on('mouseup', onMapUp);
     });
     entry.marker.on('mouseup', function(e){
+      if (!dragging) return; // not our drag (e.g. a map pan ending over a pin) — let Leaflet handle it normally
       if (e.originalEvent) e.originalEvent.stopPropagation();
       finish(entry.s);
     });
