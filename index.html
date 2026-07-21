@@ -320,6 +320,7 @@
     border-radius: 20px; padding: 10px 20px; cursor: pointer; transition: opacity 0.15s ease;
   }
   .lookup-btn:hover { opacity: 0.85; }
+  .lookup-btn:disabled { opacity: 0.5; cursor: default; }
   .lookup-msg { font-size: 0.8rem; color: var(--gold); margin: 10px 0 0; min-height: 1.1em; }
 
   footer { padding: 28px 0 48px; }
@@ -369,6 +370,28 @@
     </form>
     <datalist id="lookup-options"></datalist>
     <p class="lookup-msg" id="lookup-msg"></p>
+  </div>
+
+  <div class="lookup-card">
+    <span class="lookup-tag">Add your own</span>
+    <h2 class="lookup-title">Add someone who's not on the list</h2>
+    <p class="lookup-note">Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page. Only sticks around for this visit.</p>
+    <form class="lookup-form" id="add-form">
+      <div class="lookup-field">
+        <label for="add-name">Name</label>
+        <input type="text" id="add-name" placeholder="e.g. Priya" autocomplete="off">
+      </div>
+      <div class="lookup-field">
+        <label for="add-school">School</label>
+        <input type="text" id="add-school" placeholder="e.g. University of Michigan" autocomplete="off">
+      </div>
+      <div class="lookup-field">
+        <label for="add-home">Where they're from</label>
+        <input type="text" id="add-home" placeholder="e.g. Denver, CO" autocomplete="off">
+      </div>
+      <button type="submit" class="lookup-btn" id="add-btn">Add to the map</button>
+    </form>
+    <p class="lookup-msg" id="add-msg"></p>
   </div>
 
   <section>
@@ -635,7 +658,7 @@ function attachMeasureTool(map, entries){
     armed = { school:s, ring:ring, timer:setTimeout(disarm, ARM_WINDOW_MS) };
   }
 
-  entries.forEach(function(entry){
+  function register(entry){
     entry.marker.on('click', function(){
       if (armed && armed.school === entry.s){
         disarm();
@@ -647,7 +670,9 @@ function attachMeasureTool(map, entries){
         arm(entry.s);
       }
     });
-  });
+  }
+  entries.forEach(register);
+  return { register: register };
 }
 function enablePinchZoom(map){
   map.getContainer().addEventListener('wheel', function(e){
@@ -671,7 +696,7 @@ SCHOOLS.forEach(function(s){
   liveBounds.push([s.lat, s.lng]);
 });
 if (liveBounds.length) liveMap.fitBounds(liveBounds, { padding: [24,24] });
-attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
+var liveMeasure = attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
 enablePinchZoom(liveMap);
 
 var refMap = L.map('leaflet-map', { scrollWheelZoom: false }).setView([41.5, -76], 5);
@@ -685,7 +710,7 @@ SCHOOLS.forEach(function(s){
   refBounds.push([s.lat, s.lng]);
 });
 if (refBounds.length) refMap.fitBounds(refBounds, { padding: [30,30] });
-attachMeasureTool(refMap, SCHOOLS.map(function(s){ return {s:s, marker:s._refMarker}; }));
+var refMeasure = attachMeasureTool(refMap, SCHOOLS.map(function(s){ return {s:s, marker:s._refMarker}; }));
 enablePinchZoom(refMap);
 
 /* ---------- roster ---------- */
@@ -884,6 +909,95 @@ lookupForm.addEventListener('submit', function(e){
     map.fitBounds([[from.lat,from.lng],[to.lat,to.lng]], { padding:[60,60] });
   });
   document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
+});
+
+/* ---------- add your own: geocode a school + hometown, drop a pin, look up Wikipedia ---------- */
+var CUSTOM_PALETTE = ['#7A5C61','#3C6E71','#8E6C88','#5B7B4F','#9C6644','#4C5B61','#375D81','#8A4B4B'];
+var customCount = 0;
+
+function geocode(query){
+  var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(query);
+  return fetch(url).then(function(r){ return r.json(); }).then(function(rows){
+    if (!rows || !rows[0]) return null;
+    var row = rows[0], a = row.address || {};
+    var place = a.city || a.town || a.village || a.hamlet || a.county || row.name;
+    var region = a.state || a.country;
+    var label = (place && region) ? (place+', '+region) : row.display_name.split(',').slice(0,2).join(',').trim();
+    return { lat: parseFloat(row.lat), lng: parseFloat(row.lon), label: label };
+  });
+}
+function wikiLookup(query){
+  var url = 'https://en.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&limit=1&search=' + encodeURIComponent(query);
+  return fetch(url).then(function(r){ return r.json(); }).then(function(data){
+    return (data && data[3] && data[3][0]) || 'https://en.wikipedia.org/w/index.php?search=' + encodeURIComponent(query);
+  }).catch(function(){
+    return 'https://en.wikipedia.org/w/index.php?search=' + encodeURIComponent(query);
+  });
+}
+function addRosterRow(s){
+  var row = document.createElement('div'); row.className = 'r-row';
+  row.innerHTML =
+    '<span class="r-num" style="background:'+diag(s.color,s.color2)+'"></span>'+
+    '<div class="r-main"><div class="r-school">'+s.school+'</div>'+
+      '<div class="r-meta">'+s.who+' · '+s.city+'</div></div>'+
+    '<span class="r-status">Added</span>';
+  document.getElementById('roster').appendChild(row);
+}
+function addDirectoryRow(s){
+  var tr = document.createElement('tr');
+  var co = Math.abs(s.lat).toFixed(2)+'°N, '+Math.abs(s.lng).toFixed(2)+'°W';
+  tr.innerHTML =
+    '<td><span class="dir-school"><i class="dir-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</span></td>'+
+    '<td>'+s.who+'</td>'+
+    '<td>'+s.city+'</td>'+
+    '<td class="mono">'+co+'</td>';
+  document.getElementById('dir-body').appendChild(tr);
+}
+
+var addForm = document.getElementById('add-form');
+var addMsg = document.getElementById('add-msg');
+var addBtn = document.getElementById('add-btn');
+addForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  var name = document.getElementById('add-name').value.trim();
+  var schoolName = document.getElementById('add-school').value.trim();
+  var homeName = document.getElementById('add-home').value.trim();
+  if (!name || !schoolName || !homeName){
+    addMsg.textContent = 'Fill in a name, school, and where they’re from.';
+    return;
+  }
+  addMsg.textContent = 'Looking it up…';
+  addBtn.disabled = true;
+  Promise.all([geocode(schoolName), geocode(homeName), wikiLookup(schoolName)]).then(function(results){
+    var schoolLoc = results[0], homeLoc = results[1], wikiUrl = results[2];
+    addBtn.disabled = false;
+    if (!schoolLoc){ addMsg.textContent = 'Couldn’t find "'+schoolName+'" on the map.'; return; }
+    if (!homeLoc){ addMsg.textContent = 'Couldn’t find "'+homeName+'" on the map.'; return; }
+
+    var s = {
+      school: schoolName, who: name, city: schoolLoc.label,
+      lat: schoolLoc.lat, lng: schoolLoc.lng,
+      color: CUSTOM_PALETTE[customCount++ % CUSTOM_PALETTE.length], color2: '#FFFFFF',
+      wiki: wikiUrl,
+      refPoints: [{ lat: homeLoc.lat, lng: homeLoc.lng, label: homeLoc.label }]
+    };
+
+    s._marker = L.marker([s.lat,s.lng], { icon: staticSchoolIcon(s,22) }).addTo(liveMap).bindPopup(schoolPopupHtmlWithDistance(s));
+    s._refMarker = L.marker([s.lat,s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
+    liveMeasure.register({ s:s, marker:s._marker });
+    refMeasure.register({ s:s, marker:s._refMarker });
+
+    addRosterRow(s);
+    addDirectoryRow(s);
+
+    addMsg.textContent = 'Added '+name+' at '+schoolName+'.';
+    addForm.reset();
+    liveMap.panTo([s.lat, s.lng]);
+    document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
+  }).catch(function(){
+    addBtn.disabled = false;
+    addMsg.textContent = 'Something went wrong looking that up — try again.';
+  });
 });
 </script>
 </body>
