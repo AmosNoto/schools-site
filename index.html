@@ -551,6 +551,11 @@ function attachMeasureTool(map, entries){
   function ll(s){ return L.latLng(s.lat, s.lng); }
   function onMove(e){
     if (!dragging || !tempLine) return;
+    if (e.originalEvent && e.originalEvent.buttons === 0){
+      // mouse button isn't actually down (a mouseup was missed) -- self-heal instead of leaving the line stuck to the cursor
+      finish(null);
+      return;
+    }
     tempLine.setLatLngs([ll(startSchool), e.latlng]);
   }
   function finish(endSchool){
@@ -582,6 +587,17 @@ function attachMeasureTool(map, entries){
     });
   });
 }
+function guardAgainstStuckDrag(map){
+  // Safety net: if Leaflet's own map-drag thinks it's still active but the mouse button
+  // isn't actually held down (a mouseup it needed got missed somewhere), end it immediately
+  // instead of letting the map keep following the cursor indefinitely.
+  map.on('mousemove', function(e){
+    var d = map.dragging._draggable;
+    if (d && d._moving && e.originalEvent && e.originalEvent.buttons === 0){
+      d.finishDrag();
+    }
+  });
+}
 function enablePinchZoom(map){
   map.getContainer().addEventListener('wheel', function(e){
     if (!e.ctrlKey) return; // trackpad pinch (and ctrl+scroll) send ctrlKey:true; plain scroll is left alone
@@ -606,6 +622,7 @@ SCHOOLS.forEach(function(s){
 if (liveBounds.length) liveMap.fitBounds(liveBounds, { padding: [24,24] });
 attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
 enablePinchZoom(liveMap);
+guardAgainstStuckDrag(liveMap);
 
 /* ---------- roster ---------- */
 var roster=document.getElementById('roster');
@@ -781,6 +798,7 @@ SCHOOLS.forEach(function(s){
 if (refBounds.length) refMap.fitBounds(refBounds, { padding: [30,30] });
 attachMeasureTool(refMap, SCHOOLS.map(function(s){ return {s:s, marker:s._refMarker}; }));
 enablePinchZoom(refMap);
+guardAgainstStuckDrag(refMap);
 </script>
 </body>
 </html>
