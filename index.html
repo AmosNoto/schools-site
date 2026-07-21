@@ -153,7 +153,6 @@
     padding: 8px;
     position: relative;
   }
-  .mapcard.allhome { box-shadow: 0 0 0 2px var(--gold), 0 0 34px var(--gold-glow); }
 
   /* ---------- leaflet maps ---------- */
   #map-live {
@@ -201,12 +200,11 @@
     font-size: 0.78rem; color: var(--muted);
     padding: 3px 9px; border: 1px solid var(--line); border-radius: 20px;
   }
-  .readout .count.full { background: var(--gold); color: #fff; border-color: var(--gold); }
 
   .roster { display: flex; flex-direction: column; gap: 0; }
   .r-row {
     display: grid;
-    grid-template-columns: 20px 1fr auto;
+    grid-template-columns: 20px 1fr auto auto;
     gap: 9px; align-items: center;
     padding: 7px 0; border-bottom: 1px solid #ece5d6;
   }
@@ -228,6 +226,18 @@
   }
   .r-status.home { background: var(--gold); color: #fff; border-color: var(--gold); }
   .r-row.dim { opacity: 0.5; }
+
+  /* ---------- row edit / delete controls (roster + directory) ---------- */
+  .r-actions, .dir-actions { display: flex; gap: 4px; white-space: nowrap; }
+  .row-btn {
+    width: 24px; height: 24px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--faint); font-size: 0.72rem; line-height: 1;
+    display: grid; place-items: center; cursor: pointer; padding: 0;
+    transition: all 0.15s ease;
+  }
+  .row-btn:hover { border-color: var(--gold); color: var(--ink); }
+  .row-delete:hover { border-color: #b8483f; color: #b8483f; }
 
   /* ---------- timeline ---------- */
   .tl-axis { position: relative; height: 18px; font-family: 'Space Mono', monospace;
@@ -286,7 +296,7 @@
   .dir-school { font-family: 'Fraunces', serif; font-weight: 600; display: flex; align-items: center; gap: 7px; }
   .dir-sw { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
 
-  /* ---------- quick lookup ---------- */
+  /* ---------- quick lookup / add / edit cards ---------- */
   .lookup-card {
     background: var(--panel);
     border: 1px solid var(--line);
@@ -321,6 +331,12 @@
   }
   .lookup-btn:hover { opacity: 0.85; }
   .lookup-btn:disabled { opacity: 0.5; cursor: default; }
+  .lookup-cancel {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    background: none; border: none; color: var(--muted);
+    text-decoration: underline; cursor: pointer; padding: 10px 4px;
+  }
+  .lookup-cancel:hover { color: var(--ink); }
   .lookup-msg { font-size: 0.8rem; color: var(--gold); margin: 10px 0 0; min-height: 1.1em; }
 
   footer { padding: 28px 0 48px; }
@@ -344,10 +360,9 @@
   <header class="hero">
     <p class="eyebrow">A field guide to the group · 2026–27</p>
     <h1>Where is everyone, and when are we all home?</h1>
-    <p class="lede">Fourteen schools, one graduating class, scattered from Montréal to New Orleans. Drag through the school year to watch who heads home and when — and find the rare windows the whole group overlaps.</p>
+    <p class="lede">One graduating class, scattered from Montréal to New Orleans. Drag through the school year to watch who heads home and when — and find the rare windows the whole group overlaps.</p>
     <div class="hero-stats">
-      <div class="stat"><div class="n">14</div><div class="l">schools · 5 states, D.C. &amp; Québec</div></div>
-      <div class="stat"><div class="n">Dec 23–Jan 4</div><div class="l">the only stretch all 14 are home at once</div></div>
+      <div class="stat"><div class="n">Dec 23–Jan 4</div><div class="l">the only stretch the whole group is home at once</div></div>
       <div class="stat"><div class="n">2</div><div class="l">people you can't catch on spring break</div></div>
     </div>
   </header>
@@ -374,8 +389,8 @@
 
   <div class="lookup-card">
     <span class="lookup-tag">Add your own</span>
-    <h2 class="lookup-title">Add someone who's not on the list</h2>
-    <p class="lookup-note">Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page. Only sticks around for this visit.</p>
+    <h2 class="lookup-title" id="add-card-title">Add someone who's not on the list</h2>
+    <p class="lookup-note" id="add-card-note">Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page. Sticks around across visits — edit or remove it anytime from the lists below.</p>
     <form class="lookup-form" id="add-form">
       <div class="lookup-field">
         <label for="add-name">Name</label>
@@ -390,6 +405,7 @@
         <input type="text" id="add-home" placeholder="e.g. Denver, CO" autocomplete="off">
       </div>
       <button type="submit" class="lookup-btn" id="add-btn">Add to the map</button>
+      <button type="button" class="lookup-cancel" id="add-cancel" hidden>Cancel edit</button>
     </form>
     <p class="lookup-msg" id="add-msg"></p>
   </div>
@@ -439,7 +455,7 @@
     </div>
     <div class="tl-axis" id="tl-axis"></div>
     <div class="heatwrap">
-      <div class="heat-label">How many of the 14 are on break</div>
+      <div class="heat-label">How many are on break</div>
       <div class="heat" id="heat"></div>
     </div>
     <div class="tlrows" id="tlrows">
@@ -459,9 +475,10 @@
     <div class="sec-head">
       <span class="sec-tag">05 · The roster</span>
       <h2 class="sec-title">Everyone, and where they landed</h2>
+      <p class="sec-note">Edit (✎) or remove (🗑) anyone here — changes stick around on this device.</p>
     </div>
     <table class="dir">
-      <thead><tr><th>School</th><th>Who</th><th>Where</th><th>Coords</th></tr></thead>
+      <thead><tr><th>School</th><th>Who</th><th>Where</th><th>Coords</th><th>Actions</th></tr></thead>
       <tbody id="dir-body"></tbody>
     </table>
   </section>
@@ -487,59 +504,87 @@ function inBreak(day, breaks){
   return false;
 }
 
+/* ---------- local persistence: additions, edits, and deletions survive a refresh ---------- */
+var STORAGE_KEY = 'where-everyone-is-v1';
+function loadState(){
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { customs:[], edits:{}, deletedCoreIds:[] };
+    var parsed = JSON.parse(raw);
+    return {
+      customs: Array.isArray(parsed.customs) ? parsed.customs : [],
+      edits: (parsed.edits && typeof parsed.edits === 'object') ? parsed.edits : {},
+      deletedCoreIds: Array.isArray(parsed.deletedCoreIds) ? parsed.deletedCoreIds : []
+    };
+  } catch(e){ return { customs:[], edits:{}, deletedCoreIds:[] }; }
+}
+function saveState(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); } catch(e){}
+}
+var STATE = loadState();
+
 /* ---------- named points used as distance references in popups ---------- */
 var PORTLAND_ME   = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
 var NYC           = { lat:40.7128, lng:-74.0060, label:'New York, NY' };
 var WINCHESTER_MA = { lat:42.4529, lng:-71.1489, label:'Winchester, MA' };
 
-/* ---------- school data ---------- */
-var SCHOOLS = [
- { school:'Skidmore',  who:'Amos, Bowdie',       color:'#2E7D45', color2:'#FFFFFF', me:true,
+/* ---------- core school data (real calendars) ---------- */
+var CORE_SCHOOLS = [
+ { id:'skidmore', school:'Skidmore',  who:'Amos, Bowdie',       color:'#2E7D45', color2:'#FFFFFF', me:true,
    city:'Saratoga Springs, NY', lat:43.09, lng:-73.79, wiki:'https://en.wikipedia.org/wiki/Skidmore_College',
    refPoints:[PORTLAND_ME, WINCHESTER_MA], breaks:[
    {s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-26'},{s:'2027-03-13',e:'2027-03-21'}]},
- { school:'Bowdoin',   who:'Lucy',               color:'#111111', color2:'#FFFFFF',
+ { id:'bowdoin', school:'Bowdoin',   who:'Lucy',               color:'#111111', color2:'#FFFFFF',
    city:'Brunswick, ME', lat:43.91, lng:-69.96, wiki:'https://en.wikipedia.org/wiki/Bowdoin_College', breaks:[
    {s:'2026-10-09',e:'2026-10-14'},{s:'2026-11-20',e:'2026-11-30'},{s:'2026-12-21',e:'2027-01-25'},{s:'2027-03-12',e:'2027-03-29'}]},
- { school:'Tulane',    who:'Mia',                color:'#0089CF', color2:'#00723F',
+ { id:'tulane', school:'Tulane',    who:'Mia',                color:'#0089CF', color2:'#00723F',
    city:'New Orleans, LA', lat:29.94, lng:-90.12, wiki:'https://en.wikipedia.org/wiki/Tulane_University', breaks:[
    {s:'2026-10-01',e:'2026-10-04'},{s:'2026-11-23',e:'2026-11-29'},{s:'2026-12-12',e:'2027-01-11'},{s:'2027-02-08',e:'2027-02-09'},{s:'2027-03-22',e:'2027-03-28'}]},
- { school:'Williams',  who:'Noah',               color:'#500082', color2:'#FFC72C',
+ { id:'williams', school:'Williams',  who:'Noah',               color:'#500082', color2:'#FFC72C',
    city:'Williamstown, MA', lat:42.71, lng:-73.20, wiki:'https://en.wikipedia.org/wiki/Williams_College', breaks:[
    {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-21',e:'2027-01-05'},{s:'2027-01-29',e:'2027-02-03'},{s:'2027-03-20',e:'2027-04-04'}]},
- { school:'Middlebury',who:'Emma, Amelia, Finn', color:'#0D395F', color2:'#FFFFFF',
+ { id:'middlebury', school:'Middlebury',who:'Emma, Amelia, Finn', color:'#0D395F', color2:'#FFFFFF',
    city:'Middlebury, VT', lat:44.01, lng:-73.17, wiki:'https://en.wikipedia.org/wiki/Middlebury_College', breaks:[
    {s:'2026-10-16',e:'2026-10-18'},{s:'2026-11-20',e:'2026-11-29'},{s:'2026-12-21',e:'2027-01-04'},{s:'2027-01-30',e:'2027-02-07'},{s:'2027-03-19',e:'2027-03-28'}]},
- { school:'WPI',       who:'Lincoln',            color:'#AC2B37', color2:'#A7A9AC',
+ { id:'wpi', school:'WPI',       who:'Lincoln',            color:'#AC2B37', color2:'#A7A9AC',
    city:'Worcester, MA', lat:42.27, lng:-71.81, wiki:'https://en.wikipedia.org/wiki/Worcester_Polytechnic_Institute', breaks:[
    {s:'2026-10-10',e:'2026-10-18'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-12',e:'2027-01-12'},{s:'2027-03-06',e:'2027-03-14'}]},
- { school:'Columbia',  who:'George',             color:'#6CACE4', color2:'#FFFFFF',
+ { id:'columbia', school:'Columbia',  who:'George',             color:'#6CACE4', color2:'#FFFFFF',
    city:'New York, NY', lat:40.81, lng:-73.96, wiki:'https://en.wikipedia.org/wiki/Columbia_University', breaks:[
    {s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-23',e:'2027-01-18'},{s:'2027-03-13',e:'2027-03-21'}]},
- { school:'McGill',    who:'Matteo',             color:'#ED1B2F', color2:'#FFFFFF',
+ { id:'mcgill', school:'McGill',    who:'Matteo',             color:'#ED1B2F', color2:'#FFFFFF',
    city:'Montréal, QC', lat:45.50, lng:-73.58, wiki:'https://en.wikipedia.org/wiki/McGill_University', breaks:[
    {s:'2026-10-09',e:'2026-10-14'},{s:'2026-12-22',e:'2027-01-04'},{s:'2027-03-01',e:'2027-03-05'}]},
- { school:'Wesleyan',  who:'Cosimo',             color:'#7C0A02', color2:'#000000',
+ { id:'wesleyan', school:'Wesleyan',  who:'Cosimo',             color:'#7C0A02', color2:'#000000',
    city:'Middletown, CT', lat:41.56, lng:-72.66, wiki:'https://en.wikipedia.org/wiki/Wesleyan_University', breaks:[
    {s:'2026-10-19',e:'2026-10-20'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-20',e:'2027-01-20'},{s:'2027-03-06',e:'2027-03-21'}]},
- { school:'NYU',       who:'Sasha',              color:'#8B5CF6', color2:'#FFFFFF',
+ { id:'nyu', school:'NYU',       who:'Sasha',              color:'#8B5CF6', color2:'#FFFFFF',
    city:'New York, NY', lat:40.73, lng:-73.997, wiki:'https://en.wikipedia.org/wiki/New_York_University', breaks:[
    {s:'2026-10-12',e:'2026-10-12'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-18'},{s:'2027-03-13',e:'2027-03-21'}]},
- { school:'George Washington', who:'Elefe',      color:'#A69063', color2:'#00308F',
+ { id:'gw', school:'George Washington', who:'Elefe',      color:'#A69063', color2:'#00308F',
    city:'Washington, D.C.', lat:38.90, lng:-77.05, wiki:'https://en.wikipedia.org/wiki/George_Washington_University', breaks:[
    {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-23',e:'2026-11-28'},{s:'2026-12-17',e:'2027-01-10'},{s:'2027-03-08',e:'2027-03-13'}]},
- { school:'Drew',      who:'Evan · projected',   color:'#00838F', color2:'#F2A900',
+ { id:'drew', school:'Drew',      who:'Evan · projected',   color:'#00838F', color2:'#F2A900',
    city:'Madison, NJ', lat:40.76, lng:-74.42, wiki:'https://en.wikipedia.org/wiki/Drew_University', breaks:[
    {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-19'},{s:'2027-03-15',e:'2027-03-21'}]},
- { school:'Princeton', who:'Louise',             color:'#E77500', color2:'#000000',
+ { id:'princeton', school:'Princeton', who:'Louise',             color:'#E77500', color2:'#000000',
    city:'Princeton, NJ', lat:40.35, lng:-74.66, wiki:'https://en.wikipedia.org/wiki/Princeton_University',
    refPoints:[NYC], breaks:[
    {s:'2026-10-17',e:'2026-10-25'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-31'},{s:'2027-03-06',e:'2027-03-14'}]},
- { school:'Dartmouth', who:'Gus · projected',    color:'#00693E', color2:'#FFFFFF',
+ { id:'dartmouth', school:'Dartmouth', who:'Gus · projected',    color:'#00693E', color2:'#FFFFFF',
    city:'Hanover, NH', lat:43.70, lng:-72.29, wiki:'https://en.wikipedia.org/wiki/Dartmouth_College', breaks:[
    {s:'2026-11-21',e:'2027-01-05'},{s:'2027-03-13',e:'2027-03-28'}]}
 ];
-var TOTAL = SCHOOLS.length;
+CORE_SCHOOLS = CORE_SCHOOLS.filter(function(s){ return STATE.deletedCoreIds.indexOf(s.id) === -1; });
+CORE_SCHOOLS.forEach(function(s){
+  var e = STATE.edits[s.id];
+  if (e) Object.assign(s, e);
+});
+var CORE_TOTAL = CORE_SCHOOLS.length; // used only for the heat-strip's internal color scaling, never shown as text
+
+var SCHOOLS = CORE_SCHOOLS.concat(STATE.customs.map(function(c){
+  return Object.assign({ breaks: [], custom: true }, c);
+}));
 
 /* ---------- school icon + popup helpers ---------- */
 function diag(c1,c2){ return 'linear-gradient(135deg, '+c1+' 50%, '+c2+' 50%)'; }
@@ -690,67 +735,88 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 18
 }).addTo(liveMap);
-var liveBounds=[];
-SCHOOLS.forEach(function(s){
-  s._marker = L.marker([s.lat, s.lng], { icon: schoolIcon(s,false) }).addTo(liveMap).bindPopup(schoolPopupHtml(s));
-  liveBounds.push([s.lat, s.lng]);
-});
-if (liveBounds.length) liveMap.fitBounds(liveBounds, { padding: [24,24] });
-var liveMeasure = attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
-enablePinchZoom(liveMap);
-
 var refMap = L.map('leaflet-map', { scrollWheelZoom: false }).setView([41.5, -76], 5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 18
 }).addTo(refMap);
-var refBounds=[];
+
 SCHOOLS.forEach(function(s){
+  s._marker = L.marker([s.lat, s.lng], { icon: schoolIcon(s,false) }).addTo(liveMap).bindPopup(schoolPopupHtmlWithDistance(s));
   s._refMarker = L.marker([s.lat, s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
-  refBounds.push([s.lat, s.lng]);
 });
-if (refBounds.length) refMap.fitBounds(refBounds, { padding: [30,30] });
+var initialBounds = SCHOOLS.map(function(s){ return [s.lat, s.lng]; });
+if (initialBounds.length){
+  liveMap.fitBounds(initialBounds, { padding: [24,24] });
+  refMap.fitBounds(initialBounds, { padding: [30,30] });
+}
+var liveMeasure = attachMeasureTool(liveMap, SCHOOLS.map(function(s){ return {s:s, marker:s._marker}; }));
 var refMeasure = attachMeasureTool(refMap, SCHOOLS.map(function(s){ return {s:s, marker:s._refMarker}; }));
+enablePinchZoom(liveMap);
 enablePinchZoom(refMap);
 
-/* ---------- roster ---------- */
-var roster=document.getElementById('roster');
-SCHOOLS.forEach(function(s){
-  var row=document.createElement('div'); row.className='r-row'; s._row=row;
-  var whoTxt = s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
+/* ---------- row builders (shared by initial render and by add/edit) ---------- */
+function rowWhoText(s){
+  return s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
+}
+function rowActionsHtml(s){
+  return '<span class="r-actions">'+
+      '<button type="button" class="row-btn row-edit" data-id="'+s.id+'" title="Edit" aria-label="Edit">✎</button>'+
+      '<button type="button" class="row-btn row-delete" data-id="'+s.id+'" title="Remove" aria-label="Remove">🗑</button>'+
+    '</span>';
+}
+function buildRosterRow(s){
+  var row = document.createElement('div'); row.className = 'r-row'; row.dataset.id = s.id;
   row.innerHTML =
     '<span class="r-num" style="background:'+diag(s.color,s.color2)+'"></span>'+
     '<div class="r-main"><div class="r-school">'+s.school+'</div>'+
-      '<div class="r-meta">'+whoTxt+' · '+s.city+'</div></div>'+
-    '<span class="r-status">—</span>';
-  s._status=row.querySelector('.r-status');
-  roster.appendChild(row);
-});
+      '<div class="r-meta">'+rowWhoText(s)+' · '+s.city+'</div></div>'+
+    '<span class="r-status">—</span>'+
+    rowActionsHtml(s);
+  s._row = row;
+  s._status = row.querySelector('.r-status');
+  return row;
+}
+function buildDirectoryRow(s){
+  var tr = document.createElement('tr'); tr.dataset.id = s.id;
+  var co = Math.abs(s.lat).toFixed(2)+'°N, '+Math.abs(s.lng).toFixed(2)+'°W';
+  tr.innerHTML =
+    '<td><span class="dir-school"><i class="dir-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</span></td>'+
+    '<td>'+rowWhoText(s)+'</td>'+
+    '<td>'+s.city+'</td>'+
+    '<td class="mono">'+co+'</td>'+
+    '<td class="dir-actions">'+rowActionsHtml(s)+'</td>';
+  return tr;
+}
+function buildTimelineRow(s){
+  var row = document.createElement('div'); row.className = 'tl-row'+(s.me?' me':''); row.dataset.id = s.id;
+  var label = document.createElement('div'); label.className = 'tl-label';
+  label.innerHTML = '<div class="tl-school"><i class="tl-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div><div class="tl-who">'+(s.who==='—'?'unassigned':s.who)+'</div>';
+  var track = document.createElement('div'); track.className = 'tl-track';
+  s.breaks.forEach(function(b){
+    var blk = document.createElement('div'); blk.className = 'tl-blk';
+    blk.style.left = pct(b.s)+'%';
+    blk.style.width = Math.max(pct(b.e)-pct(b.s),0.5)+'%';
+    blk.style.background = s.color;
+    blk.title = s.school+': '+b.s+' → '+b.e;
+    track.appendChild(blk);
+  });
+  row.appendChild(label); row.appendChild(track);
+  return row;
+}
+
+/* ---------- roster ---------- */
+var roster = document.getElementById('roster');
+SCHOOLS.forEach(function(s){ roster.appendChild(buildRosterRow(s)); });
 
 /* ---------- timeline ---------- */
 var tlAxis=document.getElementById('tl-axis');
 [['Sep','2026-09-01'],['Oct','2026-10-01'],['Nov','2026-11-01'],['Dec','2026-12-01'],['Jan','2027-01-01'],['Feb','2027-02-01'],['Mar','2027-03-01'],['Apr','2027-04-01'],['May','2027-05-01']].forEach(function(m){
   var sp=document.createElement('span'); sp.style.left=pct(m[1])+'%'; sp.textContent=m[0]; tlAxis.appendChild(sp);
 });
-
 var tlrows=document.getElementById('tlrows');
 var playhead=document.getElementById('playhead');
-SCHOOLS.forEach(function(s){
-  var row=document.createElement('div'); row.className='tl-row'+(s.me?' me':'');
-  var whoTxt = s.who==='—' ? 'unassigned' : s.who;
-  var label=document.createElement('div'); label.className='tl-label';
-  label.innerHTML='<div class="tl-school"><i class="tl-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div><div class="tl-who">'+whoTxt+'</div>';
-  var track=document.createElement('div'); track.className='tl-track';
-  s.breaks.forEach(function(b){
-    var blk=document.createElement('div'); blk.className='tl-blk';
-    blk.style.left=pct(b.s)+'%';
-    blk.style.width=Math.max(pct(b.e)-pct(b.s),0.5)+'%';
-    blk.style.background=s.color;
-    blk.title=s.school+': '+b.s+' → '+b.e;
-    track.appendChild(blk);
-  });
-  row.appendChild(label); row.appendChild(track); tlrows.appendChild(row);
-});
+SCHOOLS.forEach(function(s){ tlrows.appendChild(buildTimelineRow(s)); });
 
 /* ---------- heat strip ---------- */
 var counts=[];
@@ -761,7 +827,7 @@ for (var i=0;i<=SPAN;i++){
 }
 function heatColor(n){
   if (n<=0) return null;
-  var t=Math.min(n/TOTAL,1);
+  var t=Math.min(n/CORE_TOTAL,1);
   var stops=[[0,[244,238,222]],[0.34,[236,205,128]],[0.67,[214,140,60]],[1,[150,52,32]]];
   var lo=stops[0],hi=stops[stops.length-1];
   for (var k=0;k<stops.length-1;k++){ if(t>=stops[k][0]&&t<=stops[k+1][0]){lo=stops[k];hi=stops[k+1];} }
@@ -779,7 +845,7 @@ while (p<=SPAN){
     seg.style.left=pct(iso(dayToDate(p)))+'%';
     seg.style.width=Math.max(pct(iso(dayToDate(q-1)))-pct(iso(dayToDate(p)))+(100/SPAN),0.3)+'%';
     seg.style.background=heatColor(n);
-    seg.title=n+' of '+TOTAL+' on break';
+    seg.title=n+' on break';
     heat.appendChild(seg);
   }
   p=q;
@@ -787,8 +853,8 @@ while (p<=SPAN){
 
 /* ---------- findings ---------- */
 var findings=[
- ['Finding 01','One week, everyone','The only stretch where all fourteen are home at once is <em>Dec 23–Jan 4</em>, deep in winter break. Columbia is the last to leave (Dec 23) and Middlebury &amp; McGill are the first back (Jan 4) — that gap is your whole-group window. Circle it.'],
- ['Finding 02','Thanksgiving is thirteen of fourteen','Nov 25–28 pulls everyone home <em>except Matteo</em> — McGill runs through U.S. Thanksgiving because Canada takes its Thanksgiving in October (that was his Oct 9–14 break). Still the easiest near-complete weekend of the fall.'],
+ ['Finding 01','One week, everyone','The only stretch where the whole group is home at once is <em>Dec 23–Jan 4</em>, deep in winter break. Columbia is the last to leave (Dec 23) and Middlebury &amp; McGill are the first back (Jan 4) — that gap is your whole-group window. Circle it.'],
+ ['Finding 02','Thanksgiving is almost everyone','Nov 25–28 pulls everyone home <em>except Matteo</em> — McGill runs through U.S. Thanksgiving because Canada takes its Thanksgiving in October (that was his Oct 9–14 break). Still the easiest near-complete weekend of the fall.'],
  ['Finding 03','Spring break scatters worst','Yours (Mar 13–21) lines up with <em>George, Sasha, Lucy, Cosimo, Evan, and Gus</em>. But Matteo goes Mar 1–5, Princeton and the early crowd go Mar 6–14, and Mia (Mar 22–28) and Noah (Mar 20–Apr 4) go after you&rsquo;re back. <em>Mia and Matteo you can&rsquo;t catch at all.</em>'],
  ['Finding 04','October never syncs','Fall breaks are short and staggered, so the map barely warms up. Princeton&rsquo;s is the exception — a full nine days (Oct 17–25) — but it only brushes Middlebury, WPI, and Wesleyan around the 17th–20th.']
 ];
@@ -801,23 +867,12 @@ findings.forEach(function(f){
 
 /* ---------- directory ---------- */
 var dirBody=document.getElementById('dir-body');
-SCHOOLS.forEach(function(s){
-  var tr=document.createElement('tr');
-  var whoTxt = s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
-  var co = Math.abs(s.lat).toFixed(2)+'°N, '+Math.abs(s.lng).toFixed(2)+'°W';
-  tr.innerHTML =
-    '<td><span class="dir-school"><i class="dir-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</span></td>'+
-    '<td>'+whoTxt+'</td>'+
-    '<td>'+s.city+'</td>'+
-    '<td class="mono">'+co+'</td>';
-  dirBody.appendChild(tr);
-});
+SCHOOLS.forEach(function(s){ dirBody.appendChild(buildDirectoryRow(s)); });
 
 /* ---------- interactivity ---------- */
 var slider=document.getElementById('slider');
 var roDate=document.getElementById('ro-date');
 var roCount=document.getElementById('ro-count');
-var mapcard=document.getElementById('mapcard');
 
 var CHIPS=[
  ['Fall break','2026-10-20'],
@@ -849,15 +904,7 @@ function update(){
     else { s._row.classList.add('dim'); s._status.textContent='In session'; s._status.className='r-status'; }
   });
   roDate.textContent=fmtDate(day);
-  if (homeCount===TOTAL){
-    roCount.textContent="Everyone's home";
-    roCount.className='count full';
-    mapcard.classList.add('allhome');
-  } else {
-    roCount.textContent=homeCount+' of '+TOTAL+' home';
-    roCount.className='count';
-    mapcard.classList.remove('allhome');
-  }
+  roCount.textContent = homeCount+' home';
   var base = window.matchMedia('(max-width:820px)').matches ? 116 : 150;
   playhead.style.left='calc('+base+'px + '+(pct(iso(day))/100)+' * (100% - '+base+'px))';
   document.querySelectorAll('.chip').forEach(function(ch){
@@ -875,12 +922,13 @@ function personNames(who){
 }
 var LOOKUP_INDEX = {};
 var lookupOptions = document.getElementById('lookup-options');
-SCHOOLS.forEach(function(s){
+function addToLookupIndex(s){
   [s.school].concat(personNames(s.who)).forEach(function(label){
     LOOKUP_INDEX[label.toLowerCase()] = s;
     var opt = document.createElement('option'); opt.value = label; lookupOptions.appendChild(opt);
   });
-});
+}
+SCHOOLS.forEach(addToLookupIndex);
 
 var lookupForm = document.getElementById('lookup-form');
 var lookupFrom = document.getElementById('lookup-from');
@@ -911,9 +959,9 @@ lookupForm.addEventListener('submit', function(e){
   document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
 });
 
-/* ---------- add your own: geocode a school + hometown, drop a pin, look up Wikipedia ---------- */
+/* ---------- add / edit: geocode a school + hometown, drop a pin, look up Wikipedia ---------- */
 var CUSTOM_PALETTE = ['#7A5C61','#3C6E71','#8E6C88','#5B7B4F','#9C6644','#4C5B61','#375D81','#8A4B4B'];
-var customCount = 0;
+var customPaletteIdx = 0;
 
 function geocode(query){
   var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(query);
@@ -934,29 +982,112 @@ function wikiLookup(query){
     return 'https://en.wikipedia.org/w/index.php?search=' + encodeURIComponent(query);
   });
 }
-function addRosterRow(s){
-  var row = document.createElement('div'); row.className = 'r-row';
-  row.innerHTML =
-    '<span class="r-num" style="background:'+diag(s.color,s.color2)+'"></span>'+
-    '<div class="r-main"><div class="r-school">'+s.school+'</div>'+
-      '<div class="r-meta">'+s.who+' · '+s.city+'</div></div>'+
-    '<span class="r-status">Added</span>';
-  document.getElementById('roster').appendChild(row);
+function persistFields(s){
+  return { id:s.id, school:s.school, who:s.who, city:s.city, lat:s.lat, lng:s.lng, color:s.color, color2:s.color2, wiki:s.wiki, refPoints:s.refPoints };
 }
-function addDirectoryRow(s){
-  var tr = document.createElement('tr');
-  var co = Math.abs(s.lat).toFixed(2)+'°N, '+Math.abs(s.lng).toFixed(2)+'°W';
-  tr.innerHTML =
-    '<td><span class="dir-school"><i class="dir-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</span></td>'+
-    '<td>'+s.who+'</td>'+
-    '<td>'+s.city+'</td>'+
-    '<td class="mono">'+co+'</td>';
-  document.getElementById('dir-body').appendChild(tr);
+function homeLabelOf(s){
+  return (s.refPoints && s.refPoints[0]) ? s.refPoints[0].label : 'Portland, ME';
+}
+function renderSchoolEverywhere(s){
+  s._marker = L.marker([s.lat,s.lng], { icon: schoolIcon(s,false) }).addTo(liveMap).bindPopup(schoolPopupHtmlWithDistance(s));
+  s._refMarker = L.marker([s.lat,s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
+  liveMeasure.register({ s:s, marker:s._marker });
+  refMeasure.register({ s:s, marker:s._refMarker });
+  roster.appendChild(buildRosterRow(s));
+  dirBody.appendChild(buildDirectoryRow(s));
+  tlrows.appendChild(buildTimelineRow(s));
+  addToLookupIndex(s);
+}
+function refreshSchoolEverywhere(s){
+  s._marker.setLatLng([s.lat, s.lng]);
+  s._marker.setPopupContent(schoolPopupHtmlWithDistance(s));
+  s._refMarker.setLatLng([s.lat, s.lng]);
+  s._refMarker.setPopupContent(schoolPopupHtmlWithDistance(s));
+
+  var newRoster = buildRosterRow(s);
+  var oldRoster = document.querySelector('#roster [data-id="'+s.id+'"]');
+  if (oldRoster) oldRoster.replaceWith(newRoster); else roster.appendChild(newRoster);
+
+  var newDir = buildDirectoryRow(s);
+  var oldDir = document.querySelector('#dir-body [data-id="'+s.id+'"]');
+  if (oldDir) oldDir.replaceWith(newDir); else dirBody.appendChild(newDir);
+
+  addToLookupIndex(s);
+}
+function deleteSchoolEverywhere(s){
+  liveMap.removeLayer(s._marker);
+  refMap.removeLayer(s._refMarker);
+  var idx = SCHOOLS.indexOf(s);
+  if (idx >= 0) SCHOOLS.splice(idx,1);
+  ['#roster','#dir-body','#tlrows'].forEach(function(sel){
+    var el = document.querySelector(sel+' [data-id="'+s.id+'"]');
+    if (el) el.remove();
+  });
 }
 
+var editingId = null;
 var addForm = document.getElementById('add-form');
 var addMsg = document.getElementById('add-msg');
 var addBtn = document.getElementById('add-btn');
+var addCancelBtn = document.getElementById('add-cancel');
+var addCardTitle = document.getElementById('add-card-title');
+var addCardNote = document.getElementById('add-card-note');
+var ADD_DEFAULT_TITLE = addCardTitle.textContent;
+var ADD_DEFAULT_NOTE = addCardNote.textContent;
+
+function startEdit(id){
+  var s = SCHOOLS.find(function(x){ return x.id === id; });
+  if (!s) return;
+  editingId = id;
+  document.getElementById('add-name').value = s.who==='—' ? '' : s.who;
+  document.getElementById('add-school').value = s.school;
+  document.getElementById('add-home').value = homeLabelOf(s);
+  addCardTitle.textContent = 'Editing ' + s.school;
+  addCardNote.textContent = 'Change any field and save — fields left as-is keep their current value.';
+  addBtn.textContent = 'Save changes';
+  addCancelBtn.hidden = false;
+  addMsg.textContent = '';
+  addForm.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+function cancelEdit(){
+  editingId = null;
+  addForm.reset();
+  addCardTitle.textContent = ADD_DEFAULT_TITLE;
+  addCardNote.textContent = ADD_DEFAULT_NOTE;
+  addBtn.textContent = 'Add to the map';
+  addCancelBtn.hidden = true;
+  addMsg.textContent = '';
+}
+addCancelBtn.addEventListener('click', cancelEdit);
+
+function handleRowAction(e){
+  var editTarget = e.target.closest('.row-edit');
+  var delTarget = e.target.closest('.row-delete');
+  if (editTarget){
+    startEdit(editTarget.dataset.id);
+    return;
+  }
+  if (delTarget){
+    var id = delTarget.dataset.id;
+    var s = SCHOOLS.find(function(x){ return x.id === id; });
+    if (!s) return;
+    var label = (s.who && s.who !== '—') ? (s.who+' at '+s.school) : s.school;
+    if (!confirm('Remove '+label+' from the list?')) return;
+    deleteSchoolEverywhere(s);
+    if (s.custom){
+      STATE.customs = STATE.customs.filter(function(c){ return c.id !== id; });
+    } else {
+      if (STATE.deletedCoreIds.indexOf(id) === -1) STATE.deletedCoreIds.push(id);
+      delete STATE.edits[id];
+    }
+    saveState();
+    if (editingId === id) cancelEdit();
+    update();
+  }
+}
+roster.addEventListener('click', handleRowAction);
+dirBody.addEventListener('click', handleRowAction);
+
 addForm.addEventListener('submit', function(e){
   e.preventDefault();
   var name = document.getElementById('add-name').value.trim();
@@ -966,34 +1097,56 @@ addForm.addEventListener('submit', function(e){
     addMsg.textContent = 'Fill in a name, school, and where they’re from.';
     return;
   }
-  addMsg.textContent = 'Looking it up…';
+
+  var existing = editingId ? SCHOOLS.find(function(x){ return x.id === editingId; }) : null;
+  var schoolUnchanged = existing && existing.school === schoolName;
+  var homeUnchanged = existing && homeLabelOf(existing) === homeName;
+
+  addMsg.textContent = editingId ? 'Saving…' : 'Looking it up…';
   addBtn.disabled = true;
-  Promise.all([geocode(schoolName), geocode(homeName), wikiLookup(schoolName)]).then(function(results){
+
+  var schoolPromise = schoolUnchanged ? Promise.resolve({ lat:existing.lat, lng:existing.lng, label:existing.city }) : geocode(schoolName);
+  var homePromise = homeUnchanged ? Promise.resolve('unchanged') : geocode(homeName);
+  var wikiPromise = schoolUnchanged ? Promise.resolve(existing.wiki) : wikiLookup(schoolName);
+
+  Promise.all([schoolPromise, homePromise, wikiPromise]).then(function(results){
     var schoolLoc = results[0], homeLoc = results[1], wikiUrl = results[2];
     addBtn.disabled = false;
     if (!schoolLoc){ addMsg.textContent = 'Couldn’t find "'+schoolName+'" on the map.'; return; }
-    if (!homeLoc){ addMsg.textContent = 'Couldn’t find "'+homeName+'" on the map.'; return; }
+    if (homeLoc !== 'unchanged' && !homeLoc){ addMsg.textContent = 'Couldn’t find "'+homeName+'" on the map.'; return; }
 
-    var s = {
-      school: schoolName, who: name, city: schoolLoc.label,
-      lat: schoolLoc.lat, lng: schoolLoc.lng,
-      color: CUSTOM_PALETTE[customCount++ % CUSTOM_PALETTE.length], color2: '#FFFFFF',
-      wiki: wikiUrl,
-      refPoints: [{ lat: homeLoc.lat, lng: homeLoc.lng, label: homeLoc.label }]
-    };
+    var refPoints = (homeLoc === 'unchanged') ? existing.refPoints : [{ lat:homeLoc.lat, lng:homeLoc.lng, label:homeName }];
+    var changes = { who:name, school:schoolName, city:schoolLoc.label, lat:schoolLoc.lat, lng:schoolLoc.lng, wiki:wikiUrl, refPoints:refPoints };
 
-    s._marker = L.marker([s.lat,s.lng], { icon: staticSchoolIcon(s,22) }).addTo(liveMap).bindPopup(schoolPopupHtmlWithDistance(s));
-    s._refMarker = L.marker([s.lat,s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
-    liveMeasure.register({ s:s, marker:s._marker });
-    refMeasure.register({ s:s, marker:s._refMarker });
-
-    addRosterRow(s);
-    addDirectoryRow(s);
-
-    addMsg.textContent = 'Added '+name+' at '+schoolName+'.';
-    addForm.reset();
-    liveMap.panTo([s.lat, s.lng]);
-    document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
+    if (existing){
+      Object.assign(existing, changes);
+      refreshSchoolEverywhere(existing);
+      if (existing.custom){
+        var c = STATE.customs.find(function(x){ return x.id === existing.id; });
+        if (c) Object.assign(c, persistFields(existing));
+      } else {
+        STATE.edits[existing.id] = Object.assign(STATE.edits[existing.id] || {}, changes);
+      }
+      saveState();
+      addMsg.textContent = 'Saved.';
+      update();
+      cancelEdit();
+    } else {
+      var s = Object.assign({
+        id: 'custom-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+        color: CUSTOM_PALETTE[customPaletteIdx++ % CUSTOM_PALETTE.length], color2: '#FFFFFF',
+        breaks: [], custom: true
+      }, changes);
+      SCHOOLS.push(s);
+      renderSchoolEverywhere(s);
+      STATE.customs.push(persistFields(s));
+      saveState();
+      addMsg.textContent = 'Added '+name+' at '+schoolName+'.';
+      addForm.reset();
+      liveMap.panTo([s.lat, s.lng]);
+      update();
+      document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
+    }
   }).catch(function(){
     addBtn.disabled = false;
     addMsg.textContent = 'Something went wrong looking that up — try again.';
