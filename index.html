@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Where Everyone Is — 2026–27</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
 
@@ -153,7 +154,27 @@
     position: relative;
   }
   .mapcard.allhome { box-shadow: 0 0 0 2px var(--gold), 0 0 34px var(--gold-glow); }
-  svg.map { width: 100%; height: auto; display: block; }
+
+  /* ---------- leaflet map ---------- */
+  #map-live {
+    width: 100%; height: 480px; border-radius: 6px;
+  }
+  #leaflet-map {
+    width: 100%; height: 480px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--panel);
+  }
+  .leaflet-popup-content-wrapper { border-radius: 8px; }
+  .popup-school {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 1rem;
+    display: flex; align-items: center; gap: 7px; margin: 0 0 4px;
+  }
+  .popup-sw { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; display: inline-block; }
+  .popup-who { font-size: 0.82rem; color: var(--muted); margin: 0 0 2px; }
+  .popup-city { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--faint); margin: 0; }
+  .popup-dist { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); margin: 6px 0 0; }
+  .popup-wiki { font-size: 0.76rem; margin: 4px 0 0; }
+  .popup-wiki a { color: var(--gold); text-decoration: none; font-weight: 600; }
+  .popup-wiki a:hover { text-decoration: underline; }
 
   .readout {
     display: flex; align-items: baseline; gap: 14px;
@@ -178,9 +199,8 @@
     padding: 7px 0; border-bottom: 1px solid #ece5d6;
   }
   .r-num {
-    font-family: 'Space Mono', monospace; font-size: 0.7rem;
-    color: #fff; width: 19px; height: 19px; border-radius: 50%;
-    display: grid; place-items: center; font-weight: 700;
+    width: 19px; height: 19px; border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.08);
   }
   .r-main { min-width: 0; }
   .r-school {
@@ -310,7 +330,7 @@
 
     <div class="map-grid">
       <div class="mapcard" id="mapcard">
-        <svg class="map" id="map" viewBox="0 0 560 580" role="img" aria-label="Map of campus locations"></svg>
+        <div id="map-live"></div>
       </div>
       <div class="roster" id="roster"></div>
     </div>
@@ -318,7 +338,16 @@
 
   <section>
     <div class="sec-head">
-      <span class="sec-tag">02 · The year</span>
+      <span class="sec-tag">02 · On the ground</span>
+      <h2 class="sec-title">Every campus, on a real map</h2>
+      <p class="sec-note">Actual coordinates this time, no decluttering. Click a pin for who's there and where.</p>
+    </div>
+    <div id="leaflet-map"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">03 · The year</span>
       <h2 class="sec-title">Every break, side by side</h2>
       <p class="sec-note">The strip up top runs hot when many schools are off at once. The gold line tracks the date you picked above.</p>
     </div>
@@ -334,7 +363,7 @@
 
   <section>
     <div class="sec-head">
-      <span class="sec-tag">03 · What the calendar says</span>
+      <span class="sec-tag">04 · What the calendar says</span>
       <h2 class="sec-title">Four things worth planning around</h2>
     </div>
     <div class="findings" id="findings"></div>
@@ -342,22 +371,22 @@
 
   <section style="border-bottom:none;">
     <div class="sec-head">
-      <span class="sec-tag">04 · The roster</span>
+      <span class="sec-tag">05 · The roster</span>
       <h2 class="sec-title">Everyone, and where they landed</h2>
     </div>
     <table class="dir">
-      <thead><tr><th>#</th><th>School</th><th>Who</th><th>Where</th><th>Coords</th></tr></thead>
+      <thead><tr><th>School</th><th>Who</th><th>Where</th><th>Coords</th></tr></thead>
       <tbody id="dir-body"></tbody>
     </table>
   </section>
 
   <footer>
     <p>Break windows are drawn from each registrar's published 2026–27 calendar and include the weekends that bracket each break. Princeton's winter-break end and Drew's full 2026–27 calendar weren't posted yet, so those (Evan's dates, and Princeton's January return) are projected from the current-year pattern — confirm before booking anything. McGill observes Canadian Thanksgiving in October, so Matteo is in class during U.S. Thanksgiving week.</p>
-    <p>Map positions are projected from real campus coordinates; a few close neighbors (the two NYC schools, the two New Jersey schools) are nudged apart so both pins stay visible.</p>
   </footer>
 
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 var START = new Date('2026-09-01'), END = new Date('2027-05-31');
 var SPAN = Math.round((END - START) / 86400000);
@@ -366,46 +395,47 @@ function dayToDate(i){ return new Date(START.getTime() + i*86400000); }
 function iso(d){ return d.toISOString().slice(0,10); }
 
 var SCHOOLS = [
- { n:1,  school:'Skidmore',  who:'you',                color:'#2E7D45', me:true,
-   city:'Saratoga Springs, NY', lat:43.09, lng:-73.79, breaks:[
+ { n:1,  school:'Skidmore',  who:'Amos, Bowdie',       color:'#2E7D45', color2:'#FFFFFF', me:true,
+   city:'Saratoga Springs, NY', lat:43.09, lng:-73.79, wiki:'https://en.wikipedia.org/wiki/Skidmore_College', breaks:[
    {s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-26'},{s:'2027-03-13',e:'2027-03-21'}]},
- { n:2,  school:'Bowdoin',   who:'Lucy',               color:'#111111',
-   city:'Brunswick, ME', lat:43.91, lng:-69.96, breaks:[
+ { n:2,  school:'Bowdoin',   who:'Lucy',               color:'#111111', color2:'#FFFFFF',
+   city:'Brunswick, ME', lat:43.91, lng:-69.96, wiki:'https://en.wikipedia.org/wiki/Bowdoin_College', breaks:[
    {s:'2026-10-09',e:'2026-10-14'},{s:'2026-11-20',e:'2026-11-30'},{s:'2026-12-21',e:'2027-01-25'},{s:'2027-03-12',e:'2027-03-29'}]},
- { n:3,  school:'Tulane',    who:'Mia',                color:'#0089CF',
-   city:'New Orleans, LA', lat:29.94, lng:-90.12, breaks:[
+ { n:3,  school:'Tulane',    who:'Mia',                color:'#0089CF', color2:'#00723F',
+   city:'New Orleans, LA', lat:29.94, lng:-90.12, wiki:'https://en.wikipedia.org/wiki/Tulane_University', breaks:[
    {s:'2026-10-01',e:'2026-10-04'},{s:'2026-11-23',e:'2026-11-29'},{s:'2026-12-12',e:'2027-01-11'},{s:'2027-02-08',e:'2027-02-09'},{s:'2027-03-22',e:'2027-03-28'}]},
- { n:4,  school:'Williams',  who:'Noah',               color:'#500082',
-   city:'Williamstown, MA', lat:42.71, lng:-73.20, breaks:[
+ { n:4,  school:'Williams',  who:'Noah',               color:'#500082', color2:'#FFC72C',
+   city:'Williamstown, MA', lat:42.71, lng:-73.20, wiki:'https://en.wikipedia.org/wiki/Williams_College', breaks:[
    {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-21',e:'2027-01-05'},{s:'2027-01-29',e:'2027-02-03'},{s:'2027-03-20',e:'2027-04-04'}]},
- { n:5,  school:'Middlebury',who:'Emma, Amelia, Finn', color:'#0D395F',
-   city:'Middlebury, VT', lat:44.01, lng:-73.17, breaks:[
+ { n:5,  school:'Middlebury',who:'Emma, Amelia, Finn', color:'#0D395F', color2:'#FFFFFF',
+   city:'Middlebury, VT', lat:44.01, lng:-73.17, wiki:'https://en.wikipedia.org/wiki/Middlebury_College', breaks:[
    {s:'2026-10-16',e:'2026-10-18'},{s:'2026-11-20',e:'2026-11-29'},{s:'2026-12-21',e:'2027-01-04'},{s:'2027-01-30',e:'2027-02-07'},{s:'2027-03-19',e:'2027-03-28'}]},
- { n:6,  school:'WPI',       who:'Lincoln',            color:'#AC2B37',
-   city:'Worcester, MA', lat:42.27, lng:-71.81, breaks:[
+ { n:6,  school:'WPI',       who:'Lincoln',            color:'#AC2B37', color2:'#A7A9AC',
+   city:'Worcester, MA', lat:42.27, lng:-71.81, wiki:'https://en.wikipedia.org/wiki/Worcester_Polytechnic_Institute', breaks:[
    {s:'2026-10-10',e:'2026-10-18'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-12',e:'2027-01-12'},{s:'2027-03-06',e:'2027-03-14'}]},
- { n:7,  school:'Columbia',  who:'George',             color:'#6CACE4',
-   city:'New York, NY', lat:40.81, lng:-73.96, breaks:[
+ { n:7,  school:'Columbia',  who:'George',             color:'#6CACE4', color2:'#FFFFFF',
+   city:'New York, NY', lat:40.81, lng:-73.96, wiki:'https://en.wikipedia.org/wiki/Columbia_University', breaks:[
    {s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-23',e:'2027-01-18'},{s:'2027-03-13',e:'2027-03-21'}]},
- { n:8,  school:'McGill',    who:'Matteo',             color:'#ED1B2F',
-   city:'Montréal, QC', lat:45.50, lng:-73.58, breaks:[
+ { n:8,  school:'McGill',    who:'Matteo',             color:'#ED1B2F', color2:'#FFFFFF',
+   city:'Montréal, QC', lat:45.50, lng:-73.58, wiki:'https://en.wikipedia.org/wiki/McGill_University', breaks:[
    {s:'2026-10-09',e:'2026-10-14'},{s:'2026-12-22',e:'2027-01-04'},{s:'2027-03-01',e:'2027-03-05'}]},
- { n:9,  school:'Wesleyan',  who:'Cosimo',             color:'#7C0A02',
-   city:'Middletown, CT', lat:41.56, lng:-72.66, breaks:[
+ { n:9,  school:'Wesleyan',  who:'Cosimo',             color:'#7C0A02', color2:'#000000',
+   city:'Middletown, CT', lat:41.56, lng:-72.66, wiki:'https://en.wikipedia.org/wiki/Wesleyan_University', breaks:[
    {s:'2026-10-19',e:'2026-10-20'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-20',e:'2027-01-20'},{s:'2027-03-06',e:'2027-03-21'}]},
- { n:10, school:'NYU',       who:'Sasha',              color:'#8B5CF6',
-   city:'New York, NY', lat:40.73, lng:-73.997, breaks:[
+ { n:10, school:'NYU',       who:'Sasha',              color:'#8B5CF6', color2:'#FFFFFF',
+   city:'New York, NY', lat:40.73, lng:-73.997, wiki:'https://en.wikipedia.org/wiki/New_York_University', breaks:[
    {s:'2026-10-12',e:'2026-10-12'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-18'},{s:'2027-03-13',e:'2027-03-21'}]},
- { n:11, school:'George Washington', who:'Elefe',      color:'#A69063',
-   city:'Washington, D.C.', lat:38.90, lng:-77.05, breaks:[
+ { n:11, school:'George Washington', who:'Elefe',      color:'#A69063', color2:'#00308F',
+   city:'Washington, D.C.', lat:38.90, lng:-77.05, wiki:'https://en.wikipedia.org/wiki/George_Washington_University', breaks:[
    {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-23',e:'2026-11-28'},{s:'2026-12-17',e:'2027-01-10'},{s:'2027-03-08',e:'2027-03-13'}]},
- { n:12, school:'Drew',      who:'Evan · projected',   color:'#00838F',
-   city:'Madison, NJ', lat:40.76, lng:-74.42, breaks:[
+ { n:12, school:'Drew',      who:'Evan · projected',   color:'#00838F', color2:'#F2A900',
+   city:'Madison, NJ', lat:40.76, lng:-74.42, wiki:'https://en.wikipedia.org/wiki/Drew_University', breaks:[
    {s:'2026-10-12',e:'2026-10-13'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-18',e:'2027-01-19'},{s:'2027-03-15',e:'2027-03-21'}]},
- { n:13, school:'Princeton', who:'Louise',             color:'#E77500',
-   city:'Princeton, NJ', lat:40.35, lng:-74.66, breaks:[
+ { n:13, school:'Princeton', who:'Louise',             color:'#E77500', color2:'#000000',
+   city:'Princeton, NJ', lat:40.35, lng:-74.66, wiki:'https://en.wikipedia.org/wiki/Princeton_University', breaks:[
    {s:'2026-10-17',e:'2026-10-25'},{s:'2026-11-25',e:'2026-11-29'},{s:'2026-12-22',e:'2027-01-31'},{s:'2027-03-06',e:'2027-03-14'}]}
 ];
+function diag(c1,c2){ return 'linear-gradient(135deg, '+c1+' 50%, '+c2+' 50%)'; }
 var TOTAL = SCHOOLS.length;
 
 function inBreak(day, breaks){
@@ -415,84 +445,57 @@ function inBreak(day, breaks){
   return false;
 }
 
-/* ---------- projection + declutter ---------- */
-var MW=560, MH=580, PAD=54;
-var latMin=29.0, latMax=46.6, lngMin=-91.8, lngMax=-68.6;
-var COS=Math.cos(40*Math.PI/180);
-var rawW=(lngMax-lngMin)*COS, rawH=(latMax-latMin);
-var scale=Math.min((MW-2*PAD)/rawW,(MH-2*PAD)/rawH);
-var offX=PAD+((MW-2*PAD)-rawW*scale)/2;
-var offY=PAD+((MH-2*PAD)-rawH*scale)/2;
-function projX(lng){ return offX + (lng-lngMin)*COS*scale; }
-function projY(lat){ return offY + (latMax-lat)*scale; }
-
-SCHOOLS.forEach(function(s){ s.tx=projX(s.lng); s.ty=projY(s.lat); s.x=s.tx; s.y=s.ty; });
-
-// force-separate overlapping pins
-var MIND=30;
-for (var it=0; it<120; it++){
-  for (var a=0;a<TOTAL;a++){ for (var b=a+1;b<TOTAL;b++){
-    var A=SCHOOLS[a], B=SCHOOLS[b];
-    var dx=B.x-A.x, dy=B.y-A.y, d=Math.sqrt(dx*dx+dy*dy)||0.01;
-    if (d<MIND){
-      var push=(MIND-d)/2, ux=dx/d, uy=dy/d;
-      A.x-=ux*push; A.y-=uy*push; B.x+=ux*push; B.y+=uy*push;
-    }
-  }}
-  SCHOOLS.forEach(function(s){
-    s.x=Math.max(PAD*0.5,Math.min(MW-PAD*0.5,s.x));
-    s.y=Math.max(PAD*0.5,Math.min(MH-PAD*0.5,s.y));
+/* ---------- shared marker helpers ---------- */
+var PORTLAND_ME = { lat:43.6591, lng:-70.2568 };
+function milesFromPortland(s){
+  var R=3958.8, toRad=function(d){ return d*Math.PI/180; };
+  var dLat=toRad(s.lat-PORTLAND_ME.lat), dLng=toRad(s.lng-PORTLAND_ME.lng);
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+
+        Math.cos(toRad(PORTLAND_ME.lat))*Math.cos(toRad(s.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+}
+function schoolPopupHtml(s){
+  var whoTxt = s.who==='—' ? 'unassigned' : s.who + (s.me ? ' (you)' : '');
+  return '<div class="popup-school"><i class="popup-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div>'+
+    '<p class="popup-who">'+whoTxt+'</p>'+
+    '<p class="popup-city">'+s.city+'</p>';
+}
+function schoolPopupHtmlWithDistance(s){
+  return schoolPopupHtml(s)+
+    '<p class="popup-dist">'+milesFromPortland(s)+' mi from Portland, ME</p>'+
+    '<p class="popup-wiki"><a href="'+s.wiki+'" target="_blank" rel="noopener">Wikipedia ↗</a></p>';
+}
+function staticSchoolIcon(s,size){
+  return L.divIcon({
+    className: '',
+    html: '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35);"></div>',
+    iconSize: [size,size], iconAnchor: [size/2,size/2], popupAnchor: [0,-size/2]
+  });
+}
+function schoolIcon(s,home){
+  var size = home ? 26 : 16;
+  var shadow = home
+    ? '0 0 0 3px #fff, 0 0 16px 4px '+s.color+'88, 0 2px 6px rgba(0,0,0,0.35)'
+    : '0 1px 4px rgba(0,0,0,0.3)';
+  return L.divIcon({
+    className: '',
+    html: '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;opacity:'+(home?1:0.55)+';box-shadow:'+shadow+';"></div>',
+    iconSize: [size,size], iconAnchor: [size/2,size/2], popupAnchor: [0,-size/2-2]
   });
 }
 
-/* ---------- build map svg ---------- */
-var SVGNS='http://www.w3.org/2000/svg';
-var map=document.getElementById('map');
-function el(tag,attrs){ var e=document.createElementNS(SVGNS,tag);
-  for (var k in attrs) e.setAttribute(k,attrs[k]); return e; }
-
-// graticule
-var gGrid=el('g',{});
-[-90,-85,-80,-75,-70].forEach(function(lng){
-  var x=projX(lng);
-  if (x<0||x>MW) return;
-  gGrid.appendChild(el('line',{x1:x,y1:8,x2:x,y2:MH-8,stroke:'#e7ddc9','stroke-width':1}));
-  var t=el('text',{x:x+3,y:MH-10,fill:'#c3b79e','font-size':9,'font-family':'Space Mono, monospace'});
-  t.textContent=Math.abs(lng)+'°W'; gGrid.appendChild(t);
-});
-[30,35,40,45].forEach(function(lat){
-  var y=projY(lat);
-  if (y<0||y>MH) return;
-  gGrid.appendChild(el('line',{x1:8,y1:y,x2:MW-8,y2:y,stroke:'#e7ddc9','stroke-width':1}));
-  var t=el('text',{x:10,y:y-4,fill:'#c3b79e','font-size':9,'font-family':'Space Mono, monospace'});
-  t.textContent=lat+'°N'; gGrid.appendChild(t);
-});
-map.appendChild(gGrid);
-
-// leader lines (true location -> displaced pin)
-var gLead=el('g',{});
+/* ---------- live "who's home" map ---------- */
+var liveMap = L.map('map-live', { scrollWheelZoom: false }).setView([41.5, -76], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 18
+}).addTo(liveMap);
+var liveBounds=[];
 SCHOOLS.forEach(function(s){
-  var dd=Math.hypot(s.x-s.tx,s.y-s.ty);
-  if (dd>4){
-    gLead.appendChild(el('line',{x1:s.tx,y1:s.ty,x2:s.x,y2:s.y,stroke:'#cbbfa6','stroke-width':1}));
-    gLead.appendChild(el('circle',{cx:s.tx,cy:s.ty,r:1.8,fill:'#cbbfa6'}));
-  }
+  s._marker = L.marker([s.lat, s.lng], { icon: schoolIcon(s,false) }).addTo(liveMap).bindPopup(schoolPopupHtml(s));
+  liveBounds.push([s.lat, s.lng]);
 });
-map.appendChild(gLead);
-
-// pins
-SCHOOLS.forEach(function(s){
-  var g=el('g',{}); g.setAttribute('data-n',s.n);
-  var glow=el('circle',{cx:s.x,cy:s.y,r:16,fill:s.color,opacity:0}); glow.setAttribute('class','pin-glow');
-  var ring=el('circle',{cx:s.x,cy:s.y,r:13,fill:'none',stroke:'#fff','stroke-width':0}); ring.setAttribute('class','pin-ring');
-  var dot=el('circle',{cx:s.x,cy:s.y,r:11,fill:s.color,stroke:'#fff','stroke-width':1.5}); dot.setAttribute('class','pin-dot');
-  var num=el('text',{x:s.x,y:s.y+3.5,'text-anchor':'middle',fill:'#fff','font-size':10,'font-weight':700,'font-family':'Space Mono, monospace'});
-  num.textContent=s.n; num.setAttribute('class','pin-num');
-  var title=el('title',{}); title.textContent=s.school+' — '+s.city+(s.who!=='—'?(' ('+s.who+')'):''); g.appendChild(title);
-  g.appendChild(glow); g.appendChild(ring); g.appendChild(dot); g.appendChild(num);
-  s._g={glow:glow,ring:ring,dot:dot,num:num};
-  map.appendChild(g);
-});
+if (liveBounds.length) liveMap.fitBounds(liveBounds, { padding: [24,24] });
 
 /* ---------- roster ---------- */
 var roster=document.getElementById('roster');
@@ -501,7 +504,7 @@ SCHOOLS.forEach(function(s){
   var youTag = s.me ? '<span class="r-you">you</span>' : '';
   var whoTxt = s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
   row.innerHTML =
-    '<span class="r-num" style="background:'+s.color+'">'+s.n+'</span>'+
+    '<span class="r-num" style="background:'+diag(s.color,s.color2)+'"></span>'+
     '<div class="r-main"><div class="r-school">'+s.school+youTag+'</div>'+
       '<div class="r-meta">'+whoTxt+' · '+s.city+'</div></div>'+
     '<span class="r-status">—</span>';
@@ -521,7 +524,7 @@ SCHOOLS.forEach(function(s){
   var row=document.createElement('div'); row.className='tl-row'+(s.me?' me':'');
   var whoTxt = s.who==='—' ? 'unassigned' : s.who;
   var label=document.createElement('div'); label.className='tl-label';
-  label.innerHTML='<div class="tl-school"><i class="tl-sw" style="background:'+s.color+'"></i>'+s.school+'</div><div class="tl-who">'+whoTxt+'</div>';
+  label.innerHTML='<div class="tl-school"><i class="tl-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div><div class="tl-who">'+whoTxt+'</div>';
   var track=document.createElement('div'); track.className='tl-track';
   s.breaks.forEach(function(b){
     var blk=document.createElement('div'); blk.className='tl-blk';
@@ -588,8 +591,7 @@ SCHOOLS.forEach(function(s){
   var whoTxt = s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : (s.who + (s.me?' (you)':''));
   var co = Math.abs(s.lat).toFixed(2)+'°N, '+Math.abs(s.lng).toFixed(2)+'°W';
   tr.innerHTML =
-    '<td class="mono">'+s.n+'</td>'+
-    '<td><span class="dir-school"><i class="dir-sw" style="background:'+s.color+'"></i>'+s.school+'</span></td>'+
+    '<td><span class="dir-school"><i class="dir-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</span></td>'+
     '<td>'+whoTxt+'</td>'+
     '<td>'+s.city+'</td>'+
     '<td class="mono">'+co+'</td>';
@@ -628,13 +630,8 @@ function update(){
   SCHOOLS.forEach(function(s){
     var home=inBreak(day,s.breaks);
     if (home) homeCount++;
-    // map pin
-    s._g.glow.setAttribute('opacity', home?0.22:0);
-    s._g.ring.setAttribute('stroke-width', home?3:0);
-    s._g.dot.setAttribute('opacity', home?1:0.32);
-    s._g.num.setAttribute('opacity', home?1:0.55);
-    s._g.dot.setAttribute('r', home?12:9);
-    s._g.num.setAttribute('font-size', home?11:9);
+    // live map marker
+    s._marker.setIcon(schoolIcon(s, home));
     // roster
     if (home){ s._row.classList.remove('dim'); s._status.textContent='Home'; s._status.className='r-status home'; }
     else { s._row.classList.add('dim'); s._status.textContent='In session'; s._status.className='r-status'; }
@@ -660,6 +657,19 @@ function update(){
 slider.addEventListener('input', update);
 window.addEventListener('resize', update);
 update();
+
+/* ---------- static reference map ---------- */
+var refMap = L.map('leaflet-map', { scrollWheelZoom: false }).setView([41.5, -76], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  maxZoom: 18
+}).addTo(refMap);
+var refBounds=[];
+SCHOOLS.forEach(function(s){
+  L.marker([s.lat, s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
+  refBounds.push([s.lat, s.lng]);
+});
+if (refBounds.length) refMap.fitBounds(refBounds, { padding: [30,30] });
 </script>
 </body>
 </html>
