@@ -286,6 +286,42 @@
   .dir-school { font-family: 'Fraunces', serif; font-weight: 600; display: flex; align-items: center; gap: 7px; }
   .dir-sw { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
 
+  /* ---------- quick lookup ---------- */
+  .lookup-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin: 28px 0 0;
+  }
+  .lookup-tag {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold);
+    display: block; margin-bottom: 6px;
+  }
+  .lookup-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.15rem; margin: 0 0 4px; }
+  .lookup-note { font-size: 0.84rem; color: var(--muted); margin: 0; }
+  .lookup-form { display: flex; align-items: flex-end; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  .lookup-field { flex: 1 1 180px; min-width: 160px; display: flex; flex-direction: column; gap: 6px; }
+  .lookup-field label {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--faint);
+  }
+  .lookup-field input {
+    font-family: 'Inter', sans-serif; font-size: 0.92rem;
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px;
+    background: #fff; color: var(--ink); outline: none;
+  }
+  .lookup-field input:focus { border-color: var(--gold); }
+  .lookup-arrow { font-size: 1.2rem; color: var(--faint); padding-bottom: 9px; }
+  .lookup-btn {
+    font-family: 'Space Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
+    text-transform: uppercase; background: var(--ink); color: #fff; border: none;
+    border-radius: 20px; padding: 10px 20px; cursor: pointer; transition: opacity 0.15s ease;
+  }
+  .lookup-btn:hover { opacity: 0.85; }
+  .lookup-msg { font-size: 0.8rem; color: var(--gold); margin: 10px 0 0; min-height: 1.1em; }
+
   footer { padding: 28px 0 48px; }
   footer p { font-size: 0.72rem; color: var(--faint); margin: 0 0 6px; max-width: 78ch; }
 
@@ -314,6 +350,26 @@
       <div class="stat"><div class="n">2</div><div class="l">people you can't catch on spring break</div></div>
     </div>
   </header>
+
+  <div class="lookup-card">
+    <span class="lookup-tag">Quick lookup</span>
+    <h2 class="lookup-title">Measure between two schools or people</h2>
+    <p class="lookup-note">Type a school or a name on each side — skip the clicking if you don't feel like it.</p>
+    <form class="lookup-form" id="lookup-form">
+      <div class="lookup-field">
+        <label for="lookup-from">Leaving from</label>
+        <input type="text" id="lookup-from" list="lookup-options" placeholder="e.g. Skidmore or Amos" autocomplete="off">
+      </div>
+      <div class="lookup-arrow">→</div>
+      <div class="lookup-field">
+        <label for="lookup-to">Going to</label>
+        <input type="text" id="lookup-to" list="lookup-options" placeholder="e.g. Princeton or Louise" autocomplete="off">
+      </div>
+      <button type="submit" class="lookup-btn">Show route</button>
+    </form>
+    <datalist id="lookup-options"></datalist>
+    <p class="lookup-msg" id="lookup-msg"></p>
+  </div>
 
   <section>
     <div class="sec-head">
@@ -786,6 +842,49 @@ function update(){
 slider.addEventListener('input', update);
 window.addEventListener('resize', update);
 update();
+
+/* ---------- quick lookup: type a school or name instead of clicking pins ---------- */
+function personNames(who){
+  if (who === '—') return [];
+  return who.split('·')[0].split(',').map(function(n){ return n.trim(); }).filter(Boolean);
+}
+var LOOKUP_INDEX = {};
+var lookupOptions = document.getElementById('lookup-options');
+SCHOOLS.forEach(function(s){
+  [s.school].concat(personNames(s.who)).forEach(function(label){
+    LOOKUP_INDEX[label.toLowerCase()] = s;
+    var opt = document.createElement('option'); opt.value = label; lookupOptions.appendChild(opt);
+  });
+});
+
+var lookupForm = document.getElementById('lookup-form');
+var lookupFrom = document.getElementById('lookup-from');
+var lookupTo = document.getElementById('lookup-to');
+var lookupMsg = document.getElementById('lookup-msg');
+lookupForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  var fromRaw = lookupFrom.value.trim(), toRaw = lookupTo.value.trim();
+  if (!fromRaw || !toRaw){
+    lookupMsg.textContent = 'Enter a school or name on both sides.';
+    return;
+  }
+  var from = LOOKUP_INDEX[fromRaw.toLowerCase()];
+  var to = LOOKUP_INDEX[toRaw.toLowerCase()];
+  if (!from || !to){
+    lookupMsg.textContent = 'Couldn’t match "'+(!from ? fromRaw : toRaw)+'" to a school or name.';
+    return;
+  }
+  if (from === to){
+    lookupMsg.textContent = 'That’s the same school on both sides.';
+    return;
+  }
+  lookupMsg.textContent = '';
+  [liveMap, refMap].forEach(function(map){
+    drawMeasureLine(map, from, to);
+    map.fitBounds([[from.lat,from.lng],[to.lat,to.lng]], { padding:[60,60] });
+  });
+  document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
+});
 </script>
 </body>
 </html>
