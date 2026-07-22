@@ -1107,7 +1107,6 @@ function renderVerifyCard(){
   }
 }
 function onSignedIn(user){
-  if (currentUser && currentUser.id !== user.id) clearAllEntries(); // switching accounts without an explicit sign-out first
   currentUser = user;
   renderVerifyCard();
   setAddFormEnabled(true);
@@ -1344,6 +1343,7 @@ addForm.addEventListener('submit', function(e){
 /* ---------- load your own private entries from Supabase (RLS restricts this to your rows only) ---------- */
 function loadEntries(){
   if (!SUPABASE_CONFIGURED || !currentUser){ renderEmptyStates(); return; }
+  clearAllEntries(); // always start from a clean slate -- this can be called more than once for the same session (token refresh, etc.)
   sb.from('entries').select('*').order('created_at', { ascending:true }).then(function(res){
     if (res.error){ console.error(res.error); renderEmptyStates(); return; }
     (res.data || []).forEach(function(row){
