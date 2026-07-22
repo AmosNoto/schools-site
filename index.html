@@ -81,7 +81,7 @@
   .sec-note { font-size: 0.9rem; color: var(--muted); margin: 0; max-width: 62ch; }
 
   /* ---------- scrubber ---------- */
-  .scrubber { margin-bottom: 26px; }
+  .scrubber { margin-bottom: 18px; }
   .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
   .chip {
     font-family: 'Space Mono', monospace;
@@ -115,11 +115,6 @@
     background: var(--gold); border: 3px solid var(--panel);
     box-shadow: 0 1px 4px rgba(0,0,0,0.25); cursor: pointer;
   }
-  .scrub-scale {
-    display: flex; justify-content: space-between;
-    font-family: 'Space Mono', monospace; font-size: 0.62rem;
-    color: var(--faint); letter-spacing: 0.05em;
-  }
 
   /* ---------- map + roster ---------- */
   .map-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 26px; align-items: start; }
@@ -147,8 +142,7 @@
   }
   .popup-sw { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; display: inline-block; }
   .popup-who { font-size: 0.82rem; color: var(--muted); margin: 0 0 2px; }
-  .popup-city { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--faint); margin: 0; }
-  .popup-dist { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--muted); margin: 6px 0 0; }
+  .popup-city { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--faint); margin: 4px 0 0; }
   .popup-wiki { font-size: 0.76rem; margin: 4px 0 0; }
   .popup-wiki a { color: var(--gold); text-decoration: none; font-weight: 600; }
   .popup-wiki a:hover { text-decoration: underline; }
@@ -166,8 +160,8 @@
   }
 
   .readout {
-    display: flex; align-items: baseline; gap: 14px;
-    margin-bottom: 14px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px; flex-wrap: wrap;
   }
   .readout .date {
     font-family: 'Space Mono', monospace;
@@ -181,22 +175,20 @@
 
   .roster { display: flex; flex-direction: column; gap: 0; }
   .roster-empty { font-size: 0.86rem; color: var(--faint); padding: 10px 0; }
-  .r-row {
+  .r-group { padding: 10px 0; border-bottom: 1px solid #ece5d6; }
+  .r-group-head {
     display: grid;
-    grid-template-columns: 20px 1fr auto auto;
+    grid-template-columns: 20px 1fr auto;
     gap: 9px; align-items: center;
-    padding: 7px 0; border-bottom: 1px solid #ece5d6;
   }
   .r-num {
     width: 19px; height: 19px; border-radius: 50%;
     border: 1px solid rgba(0,0,0,0.08);
   }
-  .r-main { min-width: 0; }
   .r-school {
     font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.9rem;
-    display: flex; align-items: center; gap: 7px; line-height: 1.15;
+    display: flex; align-items: center; gap: 7px; line-height: 1.15; min-width: 0;
   }
-  .r-meta { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
   .r-status {
     font-family: 'Space Mono', monospace; font-size: 0.62rem;
     letter-spacing: 0.04em; text-transform: uppercase;
@@ -204,10 +196,14 @@
     border: 1px solid var(--line); color: var(--faint);
   }
   .r-status.home { background: var(--gold); color: #fff; border-color: var(--gold); }
-  .r-row.dim { opacity: 0.5; }
+  .r-group.dim .r-group-head { opacity: 0.5; }
+  .r-members { margin: 8px 0 0 29px; display: flex; flex-direction: column; gap: 5px; }
+  .r-member { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .r-member-name { font-size: 0.78rem; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .r-member-name .home-city { color: var(--muted); }
 
   /* ---------- row edit / delete controls (roster + directory) ---------- */
-  .r-actions, .dir-actions { display: flex; gap: 4px; white-space: nowrap; min-height: 24px; }
+  .r-actions, .dir-actions { display: flex; gap: 4px; white-space: nowrap; min-height: 24px; flex: 0 0 auto; }
   .row-btn {
     width: 24px; height: 24px; border-radius: 6px;
     border: 1px solid var(--line); background: var(--panel);
@@ -225,10 +221,13 @@
     letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint);
     text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line);
   }
-  table.dir td { padding: 9px 10px; border-bottom: 1px solid #ece5d6; vertical-align: middle; }
+  table.dir td { padding: 8px 10px; border-bottom: 1px solid #ece5d6; vertical-align: middle; }
   table.dir td.mono { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+  tr.dir-group-head td { padding-top: 16px; border-bottom: none; }
+  tr.dir-group-head:first-child td { padding-top: 9px; }
   .dir-school { font-family: 'Fraunces', serif; font-weight: 600; display: flex; align-items: center; gap: 7px; }
   .dir-sw { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
+  .dir-coords { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: var(--faint); }
   .dir-empty { color: var(--faint); }
 
   /* ---------- quick lookup / verify / add / edit cards ---------- */
@@ -286,20 +285,21 @@
   .heat-toggle {
     font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.04em;
     text-transform: uppercase; background: var(--panel); border: 1px solid var(--line);
-    color: var(--muted); border-radius: 20px; padding: 6px 14px; cursor: pointer; margin-top: 10px;
+    color: var(--muted); border-radius: 20px; padding: 6px 14px; cursor: pointer;
   }
   .heat-toggle:hover { border-color: var(--gold); color: var(--ink); }
   .heat-scale {
     display: flex; justify-content: space-between; margin: 4px 0 14px;
     font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--faint); letter-spacing: 0.05em;
   }
-  .heat-list { display: flex; flex-direction: column; gap: 10px; }
+  .heat-list { display: flex; flex-direction: column; gap: 12px; }
   .heat-empty { font-size: 0.86rem; color: var(--faint); padding: 10px 0; }
-  .heat-row { display: grid; grid-template-columns: 170px 1fr; gap: 12px; align-items: center; }
+  .heat-row { display: grid; grid-template-columns: 210px 1fr; gap: 12px; align-items: center; }
   .heat-label { font-size: 0.8rem; display: flex; align-items: center; gap: 7px; min-width: 0; }
   .heat-label .sw { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
   .heat-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .heat-strip { height: 16px; border-radius: 4px; background: var(--line); }
+  .heat-strip { height: 16px; border-radius: 4px; background: var(--line); position: relative; overflow: hidden; }
+  .heat-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); pointer-events: none; }
 
   footer { padding: 28px 0 48px; }
   footer p { font-size: 0.72rem; color: var(--faint); margin: 0 0 6px; max-width: 78ch; }
@@ -385,20 +385,7 @@
     <div class="sec-head">
       <span class="sec-tag">01 · The map</span>
       <h2 class="sec-title">Who's home on a given day</h2>
-      <p class="sec-note">Each pin is a person, colored per entry. Click one pin, then another within 10 seconds, to measure the distance and driving time between them.</p>
-    </div>
-
-    <div class="scrubber">
-      <div class="chips" id="chips"></div>
-      <input type="range" id="slider" min="0" max="272" value="118">
-      <div class="scrub-scale">
-        <span>Sep</span><span>Nov</span><span>Jan</span><span>Mar</span><span>May</span>
-      </div>
-    </div>
-
-    <div class="readout">
-      <span class="date" id="ro-date">—</span>
-      <span class="count" id="ro-count">—</span>
+      <p class="sec-note">Each pin is a school, colored to match it, with everyone you've got there grouped underneath. Click one pin, then another within 10 seconds, to measure the distance and driving time between them. Scrub the date down in "The year" below to see who's home.</p>
     </div>
 
     <div class="map-grid">
@@ -422,9 +409,19 @@
     <div class="sec-head">
       <span class="sec-tag">03 · The year</span>
       <h2 class="sec-title">Every break, side by side</h2>
-      <p class="sec-note">Break windows are filled in automatically from real 2026–27 academic calendars for the schools we've verified, and a reasonable estimate everywhere else — matched by school name, not guaranteed exact.</p>
+      <p class="sec-note">Break windows are filled in automatically from real 2026–27 academic calendars for the schools we've verified, and a reasonable estimate everywhere else — matched by school name, not guaranteed exact. Drag the slider to scrub through the year; the line moves across every strip and the map above updates too.</p>
+    </div>
+
+    <div class="scrubber">
+      <div class="chips" id="chips"></div>
+      <input type="range" id="slider" min="0" max="272" value="118">
+    </div>
+    <div class="readout">
+      <span class="date" id="ro-date">—</span>
+      <span class="count" id="ro-count">—</span>
       <button type="button" class="heat-toggle" id="heat-toggle">Invert colors</button>
     </div>
+
     <div class="heat-scale">
       <span>Sep</span><span>Nov</span><span>Jan</span><span>Mar</span><span>May</span>
     </div>
@@ -438,7 +435,7 @@
       <p class="sec-note">This list is private to your account — edit (✎) or remove (🗑) anything here, any time.</p>
     </div>
     <table class="dir">
-      <thead><tr><th>School</th><th>Who</th><th>Where</th><th>Coords</th><th>Actions</th></tr></thead>
+      <thead><tr><th>School</th><th>Who</th><th>Home</th><th>Actions</th></tr></thead>
       <tbody id="dir-body"></tbody>
     </table>
   </section>
@@ -505,7 +502,8 @@ COLLEGE_LIST.forEach(function(name){
 });
 
 /* ---------- break-window data: real 2026-27 academic calendars for a handful of schools we've verified,
-   matched by exact school name (case-insensitive). Everything else falls back to ESTIMATED_BREAKS below. ---------- */
+   matched by exact school name (case-insensitive, via SCHOOL_ALIASES first). Everything else falls back
+   to ESTIMATED_BREAKS below. ---------- */
 var SCHOOL_BREAKS = {
   'harvard university': [
     { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
@@ -641,11 +639,95 @@ var SCHOOL_ALIASES = {
   'tulane':'tulane university', 'skidmore':'skidmore college', 'bowdoin':'bowdoin college',
   'lehigh':'lehigh university', 'bates':'bates college', 'barnard':'barnard college'
 };
-function breaksForSchool(schoolName){
+function normalizeSchoolKey(schoolName){
   var key = (schoolName || '').trim().toLowerCase();
-  key = SCHOOL_ALIASES[key] || key;
-  var known = SCHOOL_BREAKS[key];
+  return SCHOOL_ALIASES[key] || key;
+}
+function breaksForSchool(schoolName){
+  var known = SCHOOL_BREAKS[normalizeSchoolKey(schoolName)];
   return known ? known.slice() : ESTIMATED_BREAKS.slice();
+}
+
+/* ---------- real school colors for the schools we know; a stable per-name fallback for everyone else ---------- */
+var CUSTOM_PALETTE = ['#7A5C61','#3C6E71','#8E6C88','#5B7B4F','#9C6644','#4C5B61','#375D81','#8A4B4B'];
+var SCHOOL_COLORS = {
+  'harvard university': ['#A51C30','#1E1E1E'],
+  'yale university': ['#00356B','#FFFFFF'],
+  'princeton university': ['#EE7F2D','#000000'],
+  'columbia university': ['#75AADB','#003DA5'],
+  'university of pennsylvania': ['#011F5B','#990000'],
+  'cornell university': ['#B31B1B','#FFFFFF'],
+  'dartmouth college': ['#00693E','#FFFFFF'],
+  'brown university': ['#4E3629','#ED1C24'],
+  'stanford university': ['#8C1515','#FFFFFF'],
+  'massachusetts institute of technology': ['#A31F34','#8A8B8C'],
+  'duke university': ['#012169','#FFFFFF'],
+  'university of chicago': ['#800000','#FFFFFF'],
+  'northwestern university': ['#4E2A84','#FFFFFF'],
+  'johns hopkins university': ['#002D72','#FFFFFF'],
+  'vanderbilt university': ['#866D4B','#000000'],
+  'rice university': ['#00205B','#C1A875'],
+  'georgetown university': ['#041E42','#63666A'],
+  'university of notre dame': ['#0C2340','#C99700'],
+  'emory university': ['#012169','#F2A900'],
+  'new york university': ['#57068C','#FFFFFF'],
+  'university of southern california': ['#990000','#FFC72C'],
+  'university of michigan': ['#00274C','#FFCB05'],
+  'michigan state university': ['#18453B','#FFFFFF'],
+  'penn state university': ['#041E42','#FFFFFF'],
+  'university of virginia': ['#232D4B','#E57200'],
+  'university of north carolina at chapel hill': ['#7BAFD4','#FFFFFF'],
+  'university of florida': ['#0021A5','#FA4616'],
+  'university of georgia': ['#BA0C2F','#000000'],
+  'georgia institute of technology': ['#B3A369','#003057'],
+  'university of alabama': ['#9E1B32','#FFFFFF'],
+  'auburn university': ['#0C2340','#E86100'],
+  'university of tennessee': ['#FF8200','#FFFFFF'],
+  'clemson university': ['#F56600','#522D80'],
+  'louisiana state university': ['#461D7C','#FDD023'],
+  'university of texas at austin': ['#BF5700','#FFFFFF'],
+  'texas a&m university': ['#500000','#FFFFFF'],
+  'baylor university': ['#154734','#FFB81C'],
+  'ohio state university': ['#BB0000','#666666'],
+  'university of wisconsin-madison': ['#C5050C','#FFFFFF'],
+  'university of illinois urbana-champaign': ['#E84A27','#13294B'],
+  'university of minnesota': ['#7A0019','#FFCC33'],
+  'indiana university bloomington': ['#990000','#FFFFFF'],
+  'purdue university': ['#CEB888','#000000'],
+  'university of california, berkeley': ['#003262','#FDB515'],
+  'university of california, los angeles': ['#2774AE','#FFD100'],
+  'university of washington': ['#4B2E83','#B7A57A'],
+  'university of oregon': ['#154733','#FEE123'],
+  'university of colorado boulder': ['#CFB87C','#000000'],
+  'arizona state university': ['#8C1D40','#FFC627'],
+  'university of arizona': ['#AB0520','#0C234B'],
+  'villanova university': ['#00205B','#13B5EA'],
+  'syracuse university': ['#F76900','#000E54'],
+  'northeastern university': ['#D41B2C','#000000'],
+  'boston college': ['#98002E','#BC9B6A'],
+  'boston university': ['#CC0000','#FFFFFF'],
+  'george washington university': ['#00264C','#FFFFFF'],
+  'williams college': ['#500082','#FFFFFF'],
+  'worcester polytechnic institute': ['#AC2B37','#A9B0B7'],
+  'middlebury college': ['#00539B','#FFFFFF'],
+  'tulane university': ['#006747','#418FDE'],
+  'skidmore college': ['#00563F','#FFC72C'],
+  'bowdoin college': ['#000000','#FFFFFF'],
+  'lehigh university': ['#653819','#FFFFFF'],
+  'bates college': ['#881124','#FFFFFF'],
+  'barnard college': ['#00A9E0','#FFFFFF'],
+  'university of rhode island': ['#003DA5','#FFFFFF']
+};
+function hashColorIndex(str){
+  var h = 0;
+  for (var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return h % CUSTOM_PALETTE.length;
+}
+function colorsForSchool(schoolName){
+  var known = SCHOOL_COLORS[normalizeSchoolKey(schoolName)];
+  if (known) return { color: known[0], color2: known[1] };
+  var key = (schoolName || '').trim().toLowerCase();
+  return { color: CUSTOM_PALETTE[hashColorIndex(key)], color2: '#FFFFFF' };
 }
 
 /* ---------- date helpers ---------- */
@@ -664,26 +746,48 @@ function inBreak(day, breaks){
 /* ---------- default distance reference (used only if an entry somehow has none) ---------- */
 var PORTLAND_ME = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
 
-/* ---------- the list starts empty; entries are fetched from Supabase per-account once signed in ---------- */
+/* ---------- the list starts empty; entries are fetched from Supabase per-account once signed in.
+   SCHOOLS is a flat list of person-entries (one per person); GROUPS (rebuilt on every render) groups
+   those entries by school, since a school should show one pin/listing with everyone there underneath. ---------- */
 var SCHOOLS = [];
+var GROUPS = [];
 function rowToSchool(row){
   return {
     id: row.id, school: row.school, who: row.who, city: row.city,
-    lat: row.lat, lng: row.lng, color: row.color, color2: row.color2,
+    lat: row.lat, lng: row.lng,
     wiki: row.wiki, refPoints: row.ref_points,
     ownerId: row.owner_id, ownerEmail: row.owner_email,
     breaks: row.breaks || []
   };
 }
 function schoolToRow(s){
+  var col = colorsForSchool(s.school);
   return {
     id: s.id, school: s.school, who: s.who, city: s.city,
-    lat: s.lat, lng: s.lng, color: s.color, color2: s.color2,
+    lat: s.lat, lng: s.lng, color: col.color, color2: col.color2,
     wiki: s.wiki, ref_points: s.refPoints, breaks: s.breaks || []
   };
 }
+function schoolKey(name){ return (name || '').trim().toLowerCase(); }
+function homeLabelOf(s){
+  return (s.refPoints && s.refPoints[0]) ? s.refPoints[0].label : 'Portland, ME';
+}
+function rebuildGroups(){
+  var map = {}, order = [];
+  SCHOOLS.forEach(function(s){
+    var k = schoolKey(s.school);
+    if (!map[k]){
+      var col = colorsForSchool(s.school);
+      map[k] = { key:k, school:s.school, lat:s.lat, lng:s.lng, city:s.city, wiki:s.wiki,
+        color:col.color, color2:col.color2, breaks:s.breaks, members:[] };
+      order.push(k);
+    }
+    map[k].members.push(s);
+  });
+  GROUPS = order.map(function(k){ return map[k]; });
+}
 
-/* ---------- school icon + popup helpers ---------- */
+/* ---------- school icon + popup helpers (operate on a GROUP: one pin per school) ---------- */
 function diag(c1,c2){ return 'linear-gradient(135deg, '+c1+' 50%, '+c2+' 50%)'; }
 function milesBetween(a,b){
   var R=3958.8, toRad=function(d){ return d*Math.PI/180; };
@@ -692,42 +796,40 @@ function milesBetween(a,b){
         Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)*Math.sin(dLng/2);
   return Math.round(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));
 }
-function schoolPopupHtml(s){
-  var whoTxt = s.who==='—' ? 'unassigned' : s.who;
-  return '<div class="popup-school"><i class="popup-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</div>'+
-    '<p class="popup-who">'+whoTxt+'</p>'+
-    '<p class="popup-city">'+s.city+'</p>';
-}
-function schoolPopupHtmlWithDistance(s){
-  var points = s.refPoints || [PORTLAND_ME];
-  var distLines = points.map(function(p){
-    return '<p class="popup-dist">'+milesBetween(p,s)+' mi from '+p.label+'</p>';
+function groupPopupHtml(g){
+  var memberLines = g.members.map(function(m){
+    var whoTxt = m.who==='—' ? 'unassigned' : m.who;
+    var points = m.refPoints || [PORTLAND_ME];
+    var distTxt = points.map(function(p){ return milesBetween(p,g)+' mi from '+p.label; }).join(' · ');
+    return '<p class="popup-who"><strong>'+whoTxt+'</strong>'+(distTxt ? ' — '+distTxt : '')+'</p>';
   }).join('');
-  return schoolPopupHtml(s) + distLines +
-    '<p class="popup-wiki"><a href="'+s.wiki+'" target="_blank" rel="noopener">Wikipedia ↗</a></p>';
+  return '<div class="popup-school"><i class="popup-sw" style="background:'+diag(g.color,g.color2)+'"></i>'+g.school+'</div>'+
+    memberLines +
+    '<p class="popup-city">'+g.city+'</p>'+
+    '<p class="popup-wiki"><a href="'+g.wiki+'" target="_blank" rel="noopener">Wikipedia ↗</a></p>';
 }
 function hitWrap(hit,size,inner){
   var pad = (hit-size)/2;
   return '<div style="width:'+hit+'px;height:'+hit+'px;position:relative;">'+
     '<div style="position:absolute;left:'+pad+'px;top:'+pad+'px;'+inner+'"></div></div>';
 }
-function staticSchoolIcon(s,size){
+function staticSchoolIcon(g,size){
   var hit = size+14;
   return L.divIcon({
     className: '',
-    html: hitWrap(hit,size,'width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35);'),
+    html: hitWrap(hit,size,'width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(g.color,g.color2)+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35);'),
     iconSize: [hit,hit], iconAnchor: [hit/2,hit/2], popupAnchor: [0,-size/2]
   });
 }
-function schoolIcon(s,home){
+function schoolIcon(g,home){
   var size = home ? 26 : 16;
   var hit = size+14;
   var shadow = home
-    ? '0 0 0 3px #fff, 0 0 16px 4px '+s.color+'88, 0 2px 6px rgba(0,0,0,0.3)'
+    ? '0 0 0 3px #fff, 0 0 16px 4px '+g.color+'88, 0 2px 6px rgba(0,0,0,0.3)'
     : '0 1px 4px rgba(0,0,0,0.3)';
   return L.divIcon({
     className: '',
-    html: hitWrap(hit,size,'width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(s.color,s.color2)+';border:2px solid #fff;opacity:'+(home?1:0.55)+';box-shadow:'+shadow+';'),
+    html: hitWrap(hit,size,'width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+diag(g.color,g.color2)+';border:2px solid #fff;opacity:'+(home?1:0.55)+';box-shadow:'+shadow+';'),
     iconSize: [hit,hit], iconAnchor: [hit/2,hit/2], popupAnchor: [0,-size/2-2]
   });
 }
@@ -837,84 +939,68 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 18
 }).addTo(refMap);
-
 var liveMeasure = attachMeasureTool(liveMap, []);
 var refMeasure = attachMeasureTool(refMap, []);
 enablePinchZoom(liveMap);
 enablePinchZoom(refMap);
 
-/* ---------- row builders (shared by initial render and by add/edit) ---------- */
-function rowWhoText(s){
-  return s.who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : s.who;
+/* ---------- row builders (one school "group" -> one pin + one roster block + one directory block + one heat row) ---------- */
+function rowWhoText(who){
+  return who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : who;
 }
 function ownsEntry(s){
   return !!currentUser && s.ownerId === currentUser.id;
 }
-function rowActionsHtml(s){
+function memberActionsHtml(s){
   if (!ownsEntry(s)) return '<span class="r-actions"></span>';
   return '<span class="r-actions">'+
       '<button type="button" class="row-btn row-edit" data-id="'+s.id+'" title="Edit" aria-label="Edit">✎</button>'+
       '<button type="button" class="row-btn row-delete" data-id="'+s.id+'" title="Remove" aria-label="Remove">🗑</button>'+
     '</span>';
 }
-function buildRosterRow(s){
-  var row = document.createElement('div'); row.className = 'r-row'; row.dataset.id = s.id;
-  row.innerHTML =
-    '<span class="r-num" style="background:'+diag(s.color,s.color2)+'"></span>'+
-    '<div class="r-main"><div class="r-school">'+s.school+'</div>'+
-      '<div class="r-meta">'+rowWhoText(s)+' · '+s.city+'</div></div>'+
-    '<span class="r-status">—</span>'+
-    rowActionsHtml(s);
-  s._row = row;
-  s._status = row.querySelector('.r-status');
-  return row;
+function buildRosterGroup(g){
+  var group = document.createElement('div'); group.className = 'r-group'; group.dataset.key = g.key;
+  var head = document.createElement('div'); head.className = 'r-group-head';
+  head.innerHTML =
+    '<span class="r-num" style="background:'+diag(g.color,g.color2)+'"></span>'+
+    '<span class="r-school">'+g.school+'</span>'+
+    '<span class="r-status">—</span>';
+  group.appendChild(head);
+  var members = document.createElement('div'); members.className = 'r-members';
+  g.members.forEach(function(m){
+    var row = document.createElement('div'); row.className = 'r-member'; row.dataset.id = m.id;
+    row.innerHTML =
+      '<span class="r-member-name">'+rowWhoText(m.who)+' <span class="home-city">· '+homeLabelOf(m)+'</span></span>'+
+      memberActionsHtml(m);
+    members.appendChild(row);
+  });
+  group.appendChild(members);
+  g._groupEl = group;
+  g._statusEl = head.querySelector('.r-status');
+  return group;
 }
-function buildDirectoryRow(s){
-  var tr = document.createElement('tr'); tr.dataset.id = s.id;
-  var co = Math.abs(s.lat).toFixed(2)+'°N, '+Math.abs(s.lng).toFixed(2)+'°W';
-  tr.innerHTML =
-    '<td><span class="dir-school"><i class="dir-sw" style="background:'+diag(s.color,s.color2)+'"></i>'+s.school+'</span></td>'+
-    '<td>'+rowWhoText(s)+'</td>'+
-    '<td>'+s.city+'</td>'+
-    '<td class="mono">'+co+'</td>'+
-    '<td class="dir-actions">'+rowActionsHtml(s)+'</td>';
-  return tr;
-}
-function renderEmptyStates(){
-  var rosterEmpty = document.getElementById('roster-empty');
-  if (rosterEmpty) rosterEmpty.remove();
-  if (!SCHOOLS.length){
-    var div = document.createElement('div'); div.id = 'roster-empty'; div.className = 'roster-empty';
-    div.textContent = currentUser ? 'No one on your list yet — add the first pin below.' : 'Sign in above to see your list.';
-    roster.appendChild(div);
-  }
-  var dirEmpty = document.getElementById('dir-empty');
-  if (dirEmpty) dirEmpty.remove();
-  if (!SCHOOLS.length){
-    var tr = document.createElement('tr'); tr.id = 'dir-empty';
-    tr.innerHTML = '<td colspan="5" class="dir-empty">'+(currentUser ? 'No one on your list yet.' : 'Sign in above to see your list.')+'</td>';
+function appendDirectoryGroup(g){
+  var co = Math.abs(g.lat).toFixed(2)+'°N, '+Math.abs(g.lng).toFixed(2)+'°W';
+  var head = document.createElement('tr'); head.className = 'dir-group-head'; head.dataset.key = g.key;
+  head.innerHTML = '<td colspan="4"><span class="dir-school"><i class="dir-sw" style="background:'+diag(g.color,g.color2)+'"></i>'+g.school+
+    '<span class="dir-coords">— '+g.city+' · '+co+'</span></span></td>';
+  dirBody.appendChild(head);
+  g.members.forEach(function(m){
+    var tr = document.createElement('tr'); tr.dataset.id = m.id;
+    tr.innerHTML =
+      '<td></td>'+
+      '<td>'+rowWhoText(m.who)+'</td>'+
+      '<td>'+homeLabelOf(m)+'</td>'+
+      '<td class="dir-actions">'+memberActionsHtml(m)+'</td>';
     dirBody.appendChild(tr);
-  }
-  var heatEmpty = document.getElementById('heat-empty');
-  if (heatEmpty) heatEmpty.remove();
-  if (!SCHOOLS.length){
-    var hdiv = document.createElement('div'); hdiv.id = 'heat-empty'; hdiv.className = 'heat-empty';
-    hdiv.textContent = currentUser ? 'Add someone above to see their break windows here.' : 'Sign in above to see your list.';
-    heatList.appendChild(hdiv);
-  }
+  });
 }
-
-/* ---------- roster + directory + break visualizer (populated once entries load from Supabase) ---------- */
-var roster = document.getElementById('roster');
-var dirBody=document.getElementById('dir-body');
-var heatList = document.getElementById('heat-list');
-var heatInverted = false;
-function heatGradient(s, invert){
-  var breakColor = s.color;
+function heatGradient(g, invert){
+  var breakColor = g.color;
   var sessionColor = '#eee6d6';
   var onBreak = invert ? sessionColor : breakColor;
   var onSession = invert ? breakColor : sessionColor;
-  var breaks = (s.breaks || []).slice().sort(function(a,b){ return new Date(a.s) - new Date(b.s); });
+  var breaks = (g.breaks || []).slice().sort(function(a,b){ return new Date(a.s) - new Date(b.s); });
   var stops = [];
   var cursor = 0;
   function pushStop(color, from, to){
@@ -934,26 +1020,105 @@ function heatGradient(s, invert){
   if (!stops.length) return onSession;
   return 'linear-gradient(to right, '+stops.join(', ')+')';
 }
-function buildHeatRow(s){
-  var row = document.createElement('div'); row.className = 'heat-row'; row.dataset.id = s.id;
+function buildHeatRow(g){
+  var row = document.createElement('div'); row.className = 'heat-row'; row.dataset.key = g.key;
+  var namesTxt = g.members.map(function(m){ return m.who==='—' ? 'unassigned' : m.who; }).join(', ');
   var label = document.createElement('div'); label.className = 'heat-label';
-  label.innerHTML = '<i class="sw" style="background:'+diag(s.color,s.color2)+'"></i><span>'+(s.who!=='—' ? s.who+' · ' : '')+s.school+'</span>';
+  label.innerHTML = '<i class="sw" style="background:'+diag(g.color,g.color2)+'"></i><span>'+g.school+' · '+namesTxt+'</span>';
   var strip = document.createElement('div'); strip.className = 'heat-strip';
-  strip.style.background = heatGradient(s, heatInverted);
+  strip.style.background = heatGradient(g, heatInverted);
+  var playhead = document.createElement('div'); playhead.className = 'heat-playhead';
+  strip.appendChild(playhead);
   row.appendChild(label); row.appendChild(strip);
-  s._heatStrip = strip;
+  g._heatStrip = strip;
+  g._heatPlayhead = playhead;
   return row;
 }
 function refreshHeatStrips(){
-  SCHOOLS.forEach(function(s){ if (s._heatStrip) s._heatStrip.style.background = heatGradient(s, heatInverted); });
+  GROUPS.forEach(function(g){ if (g._heatStrip) g._heatStrip.style.background = heatGradient(g, heatInverted); });
 }
+function renderEmptyStates(){
+  var rosterEmpty = document.getElementById('roster-empty');
+  if (rosterEmpty) rosterEmpty.remove();
+  if (!SCHOOLS.length){
+    var div = document.createElement('div'); div.id = 'roster-empty'; div.className = 'roster-empty';
+    div.textContent = currentUser ? 'No one on your list yet — add the first pin below.' : 'Sign in above to see your list.';
+    roster.appendChild(div);
+  }
+  var dirEmpty = document.getElementById('dir-empty');
+  if (dirEmpty) dirEmpty.remove();
+  if (!SCHOOLS.length){
+    var tr = document.createElement('tr'); tr.id = 'dir-empty';
+    tr.innerHTML = '<td colspan="4" class="dir-empty">'+(currentUser ? 'No one on your list yet.' : 'Sign in above to see your list.')+'</td>';
+    dirBody.appendChild(tr);
+  }
+  var heatEmpty = document.getElementById('heat-empty');
+  if (heatEmpty) heatEmpty.remove();
+  if (!SCHOOLS.length){
+    var hdiv = document.createElement('div'); hdiv.id = 'heat-empty'; hdiv.className = 'heat-empty';
+    hdiv.textContent = currentUser ? 'Add someone above to see their break windows here.' : 'Sign in above to see your list.';
+    heatList.appendChild(hdiv);
+  }
+}
+
+var roster = document.getElementById('roster');
+var dirBody = document.getElementById('dir-body');
+var heatList = document.getElementById('heat-list');
+var heatInverted = false;
 document.getElementById('heat-toggle').addEventListener('click', function(){
   heatInverted = !heatInverted;
   refreshHeatStrips();
 });
+
+/* ---------- quick lookup index: type a school or name instead of clicking pins ---------- */
+var LOOKUP_INDEX = {};
+var lookupOptions = document.getElementById('lookup-options');
+function addToLookupIndex(g){
+  var labels = [g.school].concat(g.members.map(function(m){ return m.who; }).filter(function(n){ return n && n !== '—'; }));
+  labels.forEach(function(label){
+    LOOKUP_INDEX[label.toLowerCase()] = g;
+    var opt = document.createElement('option'); opt.value = label; lookupOptions.appendChild(opt);
+  });
+}
+
+/* ---------- full render: rebuild every pin, roster block, directory block, and heat row from SCHOOLS ---------- */
+function renderAll(){
+  GROUPS.forEach(function(g){
+    if (g._marker) liveMap.removeLayer(g._marker);
+    if (g._refMarker) refMap.removeLayer(g._refMarker);
+  });
+  roster.innerHTML = '';
+  dirBody.innerHTML = '';
+  heatList.innerHTML = '';
+  LOOKUP_INDEX = {};
+  lookupOptions.innerHTML = '';
+
+  rebuildGroups();
+
+  GROUPS.forEach(function(g){
+    g._marker = L.marker([g.lat,g.lng], { icon: schoolIcon(g,false) }).addTo(liveMap).bindPopup(groupPopupHtml(g));
+    g._refMarker = L.marker([g.lat,g.lng], { icon: staticSchoolIcon(g,22) }).addTo(refMap).bindPopup(groupPopupHtml(g));
+    roster.appendChild(buildRosterGroup(g));
+    appendDirectoryGroup(g);
+    heatList.appendChild(buildHeatRow(g));
+    addToLookupIndex(g);
+  });
+
+  liveMeasure = attachMeasureTool(liveMap, GROUPS.map(function(g){ return { s:g, marker:g._marker }; }));
+  refMeasure = attachMeasureTool(refMap, GROUPS.map(function(g){ return { s:g, marker:g._refMarker }; }));
+
+  if (GROUPS.length){
+    var bounds = GROUPS.map(function(g){ return [g.lat, g.lng]; });
+    liveMap.fitBounds(bounds, { padding:[24,24] });
+    refMap.fitBounds(bounds, { padding:[30,30] });
+  }
+
+  renderEmptyStates();
+  update();
+}
 renderEmptyStates();
 
-/* ---------- interactivity ---------- */
+/* ---------- interactivity: the date slider drives both the map pins and the break-strip playhead ---------- */
 var slider=document.getElementById('slider');
 var roDate=document.getElementById('ro-date');
 var roCount=document.getElementById('ro-count');
@@ -979,13 +1144,17 @@ function fmtDate(d){
 function update(){
   var idx=parseInt(slider.value,10);
   var day=dayToDate(idx);
+  var playheadPct = Math.max(0, Math.min(100, pct(day)));
   var homeCount=0;
-  SCHOOLS.forEach(function(s){
-    var home=inBreak(day,s.breaks);
-    if (home) homeCount++;
-    s._marker.setIcon(schoolIcon(s, home));
-    if (home){ s._row.classList.remove('dim'); s._status.textContent='Home'; s._status.className='r-status home'; }
-    else { s._row.classList.add('dim'); s._status.textContent='In session'; s._status.className='r-status'; }
+  GROUPS.forEach(function(g){
+    var home=inBreak(day,g.breaks);
+    if (home) homeCount += g.members.length;
+    g._marker.setIcon(schoolIcon(g, home));
+    if (g._groupEl && g._statusEl){
+      if (home){ g._groupEl.classList.remove('dim'); g._statusEl.textContent='Home'; g._statusEl.className='r-status home'; }
+      else { g._groupEl.classList.add('dim'); g._statusEl.textContent='In session'; g._statusEl.className='r-status'; }
+    }
+    if (g._heatPlayhead) g._heatPlayhead.style.left = playheadPct+'%';
   });
   roDate.textContent=fmtDate(day);
   roCount.textContent = homeCount+' home';
@@ -998,20 +1167,6 @@ window.addEventListener('resize', update);
 update();
 
 /* ---------- quick lookup: type a school or name instead of clicking pins ---------- */
-function personNames(who){
-  if (who === '—') return [];
-  return who.split('·')[0].split(',').map(function(n){ return n.trim(); }).filter(Boolean);
-}
-var LOOKUP_INDEX = {};
-var lookupOptions = document.getElementById('lookup-options');
-function addToLookupIndex(s){
-  [s.school].concat(personNames(s.who)).forEach(function(label){
-    LOOKUP_INDEX[label.toLowerCase()] = s;
-    var opt = document.createElement('option'); opt.value = label; lookupOptions.appendChild(opt);
-  });
-}
-SCHOOLS.forEach(addToLookupIndex);
-
 var lookupForm = document.getElementById('lookup-form');
 var lookupFrom = document.getElementById('lookup-from');
 var lookupTo = document.getElementById('lookup-to');
@@ -1041,7 +1196,7 @@ lookupForm.addEventListener('submit', function(e){
   document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
 });
 
-/* ---------- verify email: send a 6-digit code, check it, remember the email on this device ---------- */
+/* ---------- sign in: magic link via Supabase Auth ---------- */
 var verifyEmailForm = document.getElementById('verify-email-form');
 var verifyEmailInput = document.getElementById('verify-email');
 var verifyMsg = document.getElementById('verify-msg');
@@ -1077,21 +1232,9 @@ function setAddFormEnabled(enabled){
   ['add-name','add-school','add-home'].forEach(function(id){ document.getElementById(id).disabled = !enabled; });
   addBtn.disabled = !enabled;
 }
-var loadGeneration = 0;
 function clearAllEntries(){
-  loadGeneration++; // invalidates any in-flight loadEntries() fetch so a stale response can't repopulate after this
-  SCHOOLS.slice().forEach(function(s){
-    liveMap.removeLayer(s._marker);
-    refMap.removeLayer(s._refMarker);
-  });
   SCHOOLS.length = 0;
-  roster.querySelectorAll('.r-row').forEach(function(el){ el.remove(); });
-  dirBody.querySelectorAll('tr').forEach(function(el){ el.remove(); });
-  heatList.querySelectorAll('.heat-row').forEach(function(el){ el.remove(); });
-  LOOKUP_INDEX = {};
-  lookupOptions.innerHTML = '';
-  renderEmptyStates();
-  update();
+  renderAll();
 }
 function renderVerifyCard(){
   if (currentUser){
@@ -1138,9 +1281,6 @@ if (SUPABASE_CONFIGURED){
 }
 
 /* ---------- add / edit: geocode a school + hometown, drop a pin, look up Wikipedia ---------- */
-var CUSTOM_PALETTE = ['#7A5C61','#3C6E71','#8E6C88','#5B7B4F','#9C6644','#4C5B61','#375D81','#8A4B4B'];
-var paletteIdx = 0;
-
 function geocode(query){
   var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(query);
   return fetch(url).then(function(r){ return r.json(); }).then(function(rows){
@@ -1159,51 +1299,6 @@ function wikiLookup(query){
   }).catch(function(){
     return 'https://en.wikipedia.org/w/index.php?search=' + encodeURIComponent(query);
   });
-}
-function homeLabelOf(s){
-  return (s.refPoints && s.refPoints[0]) ? s.refPoints[0].label : 'Portland, ME';
-}
-function renderSchoolEverywhere(s){
-  s._marker = L.marker([s.lat,s.lng], { icon: schoolIcon(s,false) }).addTo(liveMap).bindPopup(schoolPopupHtmlWithDistance(s));
-  s._refMarker = L.marker([s.lat,s.lng], { icon: staticSchoolIcon(s,22) }).addTo(refMap).bindPopup(schoolPopupHtmlWithDistance(s));
-  liveMeasure.register({ s:s, marker:s._marker });
-  refMeasure.register({ s:s, marker:s._refMarker });
-  roster.appendChild(buildRosterRow(s));
-  dirBody.appendChild(buildDirectoryRow(s));
-  heatList.appendChild(buildHeatRow(s));
-  addToLookupIndex(s);
-  renderEmptyStates();
-}
-function refreshSchoolEverywhere(s){
-  s._marker.setLatLng([s.lat, s.lng]);
-  s._marker.setPopupContent(schoolPopupHtmlWithDistance(s));
-  s._refMarker.setLatLng([s.lat, s.lng]);
-  s._refMarker.setPopupContent(schoolPopupHtmlWithDistance(s));
-
-  var newRoster = buildRosterRow(s);
-  var oldRoster = document.querySelector('#roster [data-id="'+s.id+'"]');
-  if (oldRoster) oldRoster.replaceWith(newRoster); else roster.appendChild(newRoster);
-
-  var newDir = buildDirectoryRow(s);
-  var oldDir = document.querySelector('#dir-body [data-id="'+s.id+'"]');
-  if (oldDir) oldDir.replaceWith(newDir); else dirBody.appendChild(newDir);
-
-  var newHeat = buildHeatRow(s);
-  var oldHeat = document.querySelector('#heat-list [data-id="'+s.id+'"]');
-  if (oldHeat) oldHeat.replaceWith(newHeat); else heatList.appendChild(newHeat);
-
-  addToLookupIndex(s);
-}
-function deleteSchoolEverywhere(s){
-  liveMap.removeLayer(s._marker);
-  refMap.removeLayer(s._refMarker);
-  var idx = SCHOOLS.indexOf(s);
-  if (idx >= 0) SCHOOLS.splice(idx,1);
-  ['#roster','#dir-body','#heat-list'].forEach(function(sel){
-    var el = document.querySelector(sel+' [data-id="'+s.id+'"]');
-    if (el) el.remove();
-  });
-  renderEmptyStates();
 }
 
 var editingId = null;
@@ -1259,9 +1354,10 @@ function handleRowAction(e){
     if (!confirm('Remove '+label+' from the list?')) return;
     sb.from('entries').delete().eq('id', id).then(function(res){
       if (res.error){ alert('Couldn’t remove that — try again.'); return; }
-      deleteSchoolEverywhere(s);
+      var idx = SCHOOLS.indexOf(s);
+      if (idx >= 0) SCHOOLS.splice(idx,1);
       if (editingId === id) cancelEdit();
-      update();
+      renderAll();
     });
   }
 }
@@ -1312,27 +1408,24 @@ addForm.addEventListener('submit', function(e){
         addBtn.disabled = !currentUser;
         if (res.error){ addMsg.textContent = 'Couldn’t save — try again.'; return; }
         Object.assign(existing, changes);
-        refreshSchoolEverywhere(existing);
         addMsg.textContent = 'Saved.';
-        update();
+        renderAll();
         cancelEdit();
       });
     } else {
       var s = Object.assign({
         id: 'p-'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-        color: CUSTOM_PALETTE[paletteIdx++ % CUSTOM_PALETTE.length], color2: '#FFFFFF',
-        breaks: [], ownerId: currentUser.id, ownerEmail: currentUser.email
+        ownerId: currentUser.id, ownerEmail: currentUser.email
       }, changes);
       var row = Object.assign(schoolToRow(s), { owner_id: s.ownerId, owner_email: s.ownerEmail });
       sb.from('entries').insert(row).then(function(res){
         addBtn.disabled = !currentUser;
         if (res.error){ addMsg.textContent = 'Couldn’t save — try again.'; return; }
         SCHOOLS.push(s);
-        renderSchoolEverywhere(s);
         addMsg.textContent = 'Added '+name+' at '+schoolName+'.';
         addForm.reset();
+        renderAll();
         liveMap.panTo([s.lat, s.lng]);
-        update();
         document.getElementById('map-live').scrollIntoView({ behavior:'smooth', block:'center' });
       });
     }
@@ -1343,25 +1436,16 @@ addForm.addEventListener('submit', function(e){
 });
 
 /* ---------- load your own private entries from Supabase (RLS restricts this to your rows only) ---------- */
+var loadGeneration = 0;
 function loadEntries(){
-  if (!SUPABASE_CONFIGURED || !currentUser){ renderEmptyStates(); return; }
-  clearAllEntries(); // always start from a clean slate -- this can be called more than once for the same session (token refresh, etc.)
-  var myGeneration = loadGeneration;
+  if (!SUPABASE_CONFIGURED || !currentUser){ clearAllEntries(); return; }
+  clearAllEntries();
+  var myGeneration = ++loadGeneration;
   sb.from('entries').select('*').order('created_at', { ascending:true }).then(function(res){
     if (myGeneration !== loadGeneration) return; // a newer load call superseded this one in flight -- ignore this stale result
-    if (res.error){ console.error(res.error); renderEmptyStates(); return; }
-    (res.data || []).forEach(function(row){
-      var s = rowToSchool(row);
-      SCHOOLS.push(s);
-      renderSchoolEverywhere(s);
-    });
-    if (SCHOOLS.length){
-      var bounds = SCHOOLS.map(function(s){ return [s.lat, s.lng]; });
-      liveMap.fitBounds(bounds, { padding:[24,24] });
-      refMap.fitBounds(bounds, { padding:[30,30] });
-    }
-    renderEmptyStates();
-    update();
+    if (res.error){ console.error(res.error); return; }
+    (res.data || []).forEach(function(row){ SCHOOLS.push(rowToSchool(row)); });
+    renderAll();
   });
 }
 
