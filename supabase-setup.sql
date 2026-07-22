@@ -11,6 +11,7 @@ create table public.entries (
   color2 text not null,
   wiki text,
   ref_points jsonb,
+  breaks jsonb default '[]'::jsonb,
   owner_id uuid references auth.users(id) not null,
   owner_email text not null,
   created_at timestamptz default now()
@@ -18,10 +19,10 @@ create table public.entries (
 
 alter table public.entries enable row level security;
 
--- anyone (including signed-out visitors) can read the whole roster
-create policy "Entries are viewable by everyone"
+-- entries are private: you can only read your own
+create policy "Users can view their own entries"
   on public.entries for select
-  using (true);
+  using (auth.uid() = owner_id);
 
 -- only a signed-in user can add an entry, and only as themselves
 create policy "Users can insert their own entries"

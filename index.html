@@ -282,11 +282,31 @@
     padding: 6px 12px; margin-top: 14px;
   }
 
+  /* ---------- break visualizer (heat-strip) ---------- */
+  .heat-toggle {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem; letter-spacing: 0.04em;
+    text-transform: uppercase; background: var(--panel); border: 1px solid var(--line);
+    color: var(--muted); border-radius: 20px; padding: 6px 14px; cursor: pointer; margin-top: 10px;
+  }
+  .heat-toggle:hover { border-color: var(--gold); color: var(--ink); }
+  .heat-scale {
+    display: flex; justify-content: space-between; margin: 4px 0 14px;
+    font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--faint); letter-spacing: 0.05em;
+  }
+  .heat-list { display: flex; flex-direction: column; gap: 10px; }
+  .heat-empty { font-size: 0.86rem; color: var(--faint); padding: 10px 0; }
+  .heat-row { display: grid; grid-template-columns: 170px 1fr; gap: 12px; align-items: center; }
+  .heat-label { font-size: 0.8rem; display: flex; align-items: center; gap: 7px; min-width: 0; }
+  .heat-label .sw { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
+  .heat-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .heat-strip { height: 16px; border-radius: 4px; background: var(--line); }
+
   footer { padding: 28px 0 48px; }
   footer p { font-size: 0.72rem; color: var(--faint); margin: 0 0 6px; max-width: 78ch; }
 
   @media (max-width: 820px) {
     .map-grid { grid-template-columns: 1fr; }
+    .heat-row { grid-template-columns: 1fr; gap: 4px; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -296,15 +316,15 @@
 <div class="wrap">
 
   <header class="hero">
-    <p class="eyebrow">A field guide to the group</p>
+    <p class="eyebrow">Your own private field guide</p>
     <h1>Where is everyone, and how far apart are we?</h1>
-    <p class="lede">Add yourself and your friends to build a shared-feeling map of where everyone landed — drop a pin, measure the distance and driving time between any two people, and look up the school along the way.</p>
+    <p class="lede">Sign in and add the people you want to keep track of — drop a pin, measure the distance and driving time between any two, and look up the school along the way. Everything you add is private to your account; no one else can see it.</p>
   </header>
 
   <div class="lookup-card">
     <span class="lookup-tag" id="verify-tag">Step 1</span>
     <h2 class="lookup-title" id="verify-title">Sign in to add or edit anyone</h2>
-    <p class="lookup-note" id="verify-note">We'll email you a magic link — click it and you're back here, signed in. That ties whatever you add to your email address, so only you can edit or remove it later, from any device.</p>
+    <p class="lookup-note" id="verify-note">We'll email you a magic link — click it and you're back here, signed in. Everything you add is tied to your email and private to your account — only you can ever see it, edit it, or remove it, from any device.</p>
 
     <form class="lookup-form" id="verify-email-form">
       <div class="lookup-field">
@@ -348,7 +368,8 @@
       </div>
       <div class="lookup-field">
         <label for="add-school">School</label>
-        <input type="text" id="add-school" placeholder="e.g. University of Michigan" autocomplete="off" disabled>
+        <input type="text" id="add-school" list="college-options" placeholder="e.g. University of Michigan" autocomplete="off" disabled>
+        <datalist id="college-options"></datalist>
       </div>
       <div class="lookup-field">
         <label for="add-home">Where they're from</label>
@@ -397,11 +418,24 @@
     <div id="leaflet-map"></div>
   </section>
 
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">03 · The year</span>
+      <h2 class="sec-title">Every break, side by side</h2>
+      <p class="sec-note">Break windows are filled in automatically from real 2026–27 academic calendars for the schools we've verified, and a reasonable estimate everywhere else — matched by school name, not guaranteed exact.</p>
+      <button type="button" class="heat-toggle" id="heat-toggle">Invert colors</button>
+    </div>
+    <div class="heat-scale">
+      <span>Sep</span><span>Nov</span><span>Jan</span><span>Mar</span><span>May</span>
+    </div>
+    <div class="heat-list" id="heat-list"></div>
+  </section>
+
   <section style="border-bottom:none;">
     <div class="sec-head">
-      <span class="sec-tag">03 · The roster</span>
-      <h2 class="sec-title">Everyone, and where they landed</h2>
-      <p class="sec-note">Edit (✎) or remove (🗑) your own entry here — you'll only see those controls on entries tied to your signed-in email.</p>
+      <span class="sec-tag">04 · The roster</span>
+      <h2 class="sec-title">Your people, and where they landed</h2>
+      <p class="sec-note">This list is private to your account — edit (✎) or remove (🗑) anything here, any time.</p>
     </div>
     <table class="dir">
       <thead><tr><th>School</th><th>Who</th><th>Where</th><th>Coords</th><th>Actions</th></tr></thead>
@@ -410,7 +444,7 @@
   </section>
 
   <footer>
-    <p>Locations and driving times come from OpenStreetMap/Nominatim and OSRM; Wikipedia links are looked up automatically and might occasionally land on the wrong page for an ambiguous school name. This roster is shared — sign in with a magic link to add yourself, and everyone sees the same list. Only you can edit or remove your own entry.</p>
+    <p>Locations and driving times come from OpenStreetMap/Nominatim and OSRM; Wikipedia links are looked up automatically and might occasionally land on the wrong page for an ambiguous school name. This list is private — sign in with a magic link to start your own, and only you will ever see what you add.</p>
   </footer>
 
 </div>
@@ -423,6 +457,97 @@ var SUPABASE_URL = 'https://xbnsatnbyulnmwwtgtic.supabase.co';
 var SUPABASE_ANON_KEY = 'sb_publishable_KcPmBLrlz_67MnGzmw4j3g_SkXXgqbA';
 var SUPABASE_CONFIGURED = SUPABASE_URL !== 'REPLACE_ME' && SUPABASE_ANON_KEY !== 'REPLACE_ME';
 var sb = SUPABASE_CONFIGURED ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+/* ---------- curated list of well-known, mostly-larger colleges/universities, for the School autocomplete ---------- */
+var COLLEGE_LIST = [
+  'Harvard University','Yale University','Princeton University','Columbia University',
+  'University of Pennsylvania','Cornell University','Dartmouth College','Brown University',
+  'Stanford University','Massachusetts Institute of Technology','Duke University',
+  'University of Chicago','Northwestern University','Johns Hopkins University',
+  'Vanderbilt University','Rice University','Georgetown University','University of Notre Dame',
+  'Emory University','Carnegie Mellon University','Tufts University','Wake Forest University',
+  'Boston College','New York University','Boston University','University of Southern California',
+  'Washington University in St. Louis','Case Western Reserve University',
+  'University of Michigan','Michigan State University','Penn State University',
+  'University of Massachusetts Amherst','Rutgers University','University of Connecticut',
+  'University of Maryland','University of Vermont','University at Buffalo',
+  'Binghamton University','Stony Brook University','University at Albany',
+  'University of Virginia','University of North Carolina at Chapel Hill',
+  'North Carolina State University','Duke University','University of Florida',
+  'Florida State University','University of Miami','University of Georgia',
+  'Georgia Institute of Technology','University of Alabama','Auburn University',
+  'University of Tennessee','University of South Carolina','Clemson University',
+  'University of Kentucky','Louisiana State University','University of Texas at Austin',
+  'Texas A&M University','University of Oklahoma','University of Arkansas',
+  'Texas Christian University','Southern Methodist University','Baylor University',
+  'Ohio State University','University of Wisconsin-Madison','University of Illinois Urbana-Champaign',
+  'University of Minnesota','University of Iowa','Indiana University Bloomington',
+  'Purdue University','University of Missouri','University of Kansas','Iowa State University',
+  'University of California, Berkeley','University of California, Los Angeles',
+  'University of California, San Diego','University of California, Santa Barbara',
+  'University of California, Davis','University of California, Irvine',
+  'University of California, Santa Cruz','University of Washington','University of Oregon',
+  'Oregon State University','University of Colorado Boulder','Colorado State University',
+  'Arizona State University','University of Arizona','University of Utah',
+  'University of Nevada, Las Vegas','Villanova University','Syracuse University',
+  'University of Pittsburgh','Temple University','Drexel University','Northeastern University',
+  'University of Rochester','Lehigh University','University of Delaware',
+  'James Madison University','Virginia Tech','William & Mary','George Washington University',
+  'American University','Howard University','Morehouse College','Spelman College',
+  'Hampton University'
+];
+COLLEGE_LIST = COLLEGE_LIST.filter(function(name, idx){ return COLLEGE_LIST.indexOf(name) === idx; }).sort();
+var collegeOptionsEl = document.getElementById('college-options');
+COLLEGE_LIST.forEach(function(name){
+  var opt = document.createElement('option'); opt.value = name; collegeOptionsEl.appendChild(opt);
+});
+
+/* ---------- break-window data: real 2026-27 academic calendars for a handful of schools we've verified,
+   matched by exact school name (case-insensitive). Everything else falls back to ESTIMATED_BREAKS below. ---------- */
+var SCHOOL_BREAKS = {
+  'harvard university': [
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-20', e:'2027-01-24', label:'Winter break' },
+    { s:'2027-03-13', e:'2027-03-21', label:'Spring break' }
+  ],
+  'university of michigan': [
+    { s:'2026-10-19', e:'2026-10-20', label:'Fall study break' },
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-19', e:'2027-01-12', label:'Winter break' },
+    { s:'2027-03-06', e:'2027-03-14', label:'Spring break' }
+  ],
+  'university of texas at austin': [
+    { s:'2026-11-23', e:'2026-11-28', label:'Thanksgiving' },
+    { s:'2026-12-15', e:'2027-01-10', label:'Winter break' },
+    { s:'2027-03-15', e:'2027-03-20', label:'Spring break' }
+  ],
+  'university of california, los angeles': [
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-12', e:'2027-01-03', label:'Winter break' },
+    { s:'2027-03-20', e:'2027-03-28', label:'Spring recess' }
+  ],
+  'ohio state university': [
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-19', e:'2027-01-10', label:'Winter break' },
+    { s:'2027-03-13', e:'2027-03-21', label:'Spring break' }
+  ],
+  'new york university': [
+    { s:'2026-10-12', e:'2026-10-12', label:'Fall break' },
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-22', e:'2027-01-18', label:'Winter break' },
+    { s:'2027-03-15', e:'2027-03-19', label:'Spring break' }
+  ]
+};
+var ESTIMATED_BREAKS = [
+  { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving (estimated)' },
+  { s:'2026-12-19', e:'2027-01-11', label:'Winter break (estimated)' },
+  { s:'2027-03-13', e:'2027-03-21', label:'Spring break (estimated)' }
+];
+function breaksForSchool(schoolName){
+  var key = (schoolName || '').trim().toLowerCase();
+  var known = SCHOOL_BREAKS[key];
+  return known ? known.slice() : ESTIMATED_BREAKS.slice();
+}
 
 /* ---------- date helpers ---------- */
 var START = new Date('2026-09-01'), END = new Date('2027-05-31');
@@ -440,7 +565,7 @@ function inBreak(day, breaks){
 /* ---------- default distance reference (used only if an entry somehow has none) ---------- */
 var PORTLAND_ME = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
 
-/* ---------- the list starts empty; every entry is fetched from Supabase, shared by everyone ---------- */
+/* ---------- the list starts empty; entries are fetched from Supabase per-account once signed in ---------- */
 var SCHOOLS = [];
 function rowToSchool(row){
   return {
@@ -448,14 +573,14 @@ function rowToSchool(row){
     lat: row.lat, lng: row.lng, color: row.color, color2: row.color2,
     wiki: row.wiki, refPoints: row.ref_points,
     ownerId: row.owner_id, ownerEmail: row.owner_email,
-    breaks: []
+    breaks: row.breaks || []
   };
 }
 function schoolToRow(s){
   return {
     id: s.id, school: s.school, who: s.who, city: s.city,
     lat: s.lat, lng: s.lng, color: s.color, color2: s.color2,
-    wiki: s.wiki, ref_points: s.refPoints
+    wiki: s.wiki, ref_points: s.refPoints, breaks: s.breaks || []
   };
 }
 
@@ -661,21 +786,72 @@ function renderEmptyStates(){
   if (rosterEmpty) rosterEmpty.remove();
   if (!SCHOOLS.length){
     var div = document.createElement('div'); div.id = 'roster-empty'; div.className = 'roster-empty';
-    div.textContent = 'No one on the list yet — sign in above and add the first pin.';
+    div.textContent = currentUser ? 'No one on your list yet — add the first pin below.' : 'Sign in above to see your list.';
     roster.appendChild(div);
   }
   var dirEmpty = document.getElementById('dir-empty');
   if (dirEmpty) dirEmpty.remove();
   if (!SCHOOLS.length){
     var tr = document.createElement('tr'); tr.id = 'dir-empty';
-    tr.innerHTML = '<td colspan="5" class="dir-empty">No one on the list yet.</td>';
+    tr.innerHTML = '<td colspan="5" class="dir-empty">'+(currentUser ? 'No one on your list yet.' : 'Sign in above to see your list.')+'</td>';
     dirBody.appendChild(tr);
+  }
+  var heatEmpty = document.getElementById('heat-empty');
+  if (heatEmpty) heatEmpty.remove();
+  if (!SCHOOLS.length){
+    var hdiv = document.createElement('div'); hdiv.id = 'heat-empty'; hdiv.className = 'heat-empty';
+    hdiv.textContent = currentUser ? 'Add someone above to see their break windows here.' : 'Sign in above to see your list.';
+    heatList.appendChild(hdiv);
   }
 }
 
-/* ---------- roster + directory (populated once entries load from Supabase) ---------- */
+/* ---------- roster + directory + break visualizer (populated once entries load from Supabase) ---------- */
 var roster = document.getElementById('roster');
 var dirBody=document.getElementById('dir-body');
+var heatList = document.getElementById('heat-list');
+var heatInverted = false;
+function heatGradient(s, invert){
+  var breakColor = s.color;
+  var sessionColor = '#eee6d6';
+  var onBreak = invert ? sessionColor : breakColor;
+  var onSession = invert ? breakColor : sessionColor;
+  var breaks = (s.breaks || []).slice().sort(function(a,b){ return new Date(a.s) - new Date(b.s); });
+  var stops = [];
+  var cursor = 0;
+  function pushStop(color, from, to){
+    if (to <= from) return;
+    stops.push(color+' '+from+'%', color+' '+to+'%');
+  }
+  breaks.forEach(function(b){
+    var sp = Math.max(0, Math.min(100, pct(b.s)));
+    var ep = Math.max(0, Math.min(100, pct(b.e + 'T23:59:59')));
+    if (ep <= cursor || sp >= 100) return;
+    sp = Math.max(sp, cursor);
+    if (sp > cursor) pushStop(onSession, cursor, sp);
+    pushStop(onBreak, sp, ep);
+    cursor = ep;
+  });
+  if (cursor < 100) pushStop(onSession, cursor, 100);
+  if (!stops.length) return onSession;
+  return 'linear-gradient(to right, '+stops.join(', ')+')';
+}
+function buildHeatRow(s){
+  var row = document.createElement('div'); row.className = 'heat-row'; row.dataset.id = s.id;
+  var label = document.createElement('div'); label.className = 'heat-label';
+  label.innerHTML = '<i class="sw" style="background:'+diag(s.color,s.color2)+'"></i><span>'+(s.who!=='—' ? s.who+' · ' : '')+s.school+'</span>';
+  var strip = document.createElement('div'); strip.className = 'heat-strip';
+  strip.style.background = heatGradient(s, heatInverted);
+  row.appendChild(label); row.appendChild(strip);
+  s._heatStrip = strip;
+  return row;
+}
+function refreshHeatStrips(){
+  SCHOOLS.forEach(function(s){ if (s._heatStrip) s._heatStrip.style.background = heatGradient(s, heatInverted); });
+}
+document.getElementById('heat-toggle').addEventListener('click', function(){
+  heatInverted = !heatInverted;
+  refreshHeatStrips();
+});
 renderEmptyStates();
 
 /* ---------- interactivity ---------- */
@@ -802,15 +978,18 @@ function setAddFormEnabled(enabled){
   ['add-name','add-school','add-home'].forEach(function(id){ document.getElementById(id).disabled = !enabled; });
   addBtn.disabled = !enabled;
 }
-function refreshAllRowsForOwnership(){
-  SCHOOLS.forEach(function(s){
-    var newRoster = buildRosterRow(s);
-    var oldRoster = document.querySelector('#roster [data-id="'+s.id+'"]');
-    if (oldRoster) oldRoster.replaceWith(newRoster);
-    var newDir = buildDirectoryRow(s);
-    var oldDir = document.querySelector('#dir-body [data-id="'+s.id+'"]');
-    if (oldDir) oldDir.replaceWith(newDir);
+function clearAllEntries(){
+  SCHOOLS.slice().forEach(function(s){
+    liveMap.removeLayer(s._marker);
+    refMap.removeLayer(s._refMarker);
   });
+  SCHOOLS.length = 0;
+  roster.querySelectorAll('.r-row').forEach(function(el){ el.remove(); });
+  dirBody.querySelectorAll('tr').forEach(function(el){ el.remove(); });
+  heatList.querySelectorAll('.heat-row').forEach(function(el){ el.remove(); });
+  LOOKUP_INDEX = {};
+  lookupOptions.innerHTML = '';
+  renderEmptyStates();
   update();
 }
 function renderVerifyCard(){
@@ -829,11 +1008,12 @@ function renderVerifyCard(){
   }
 }
 function onSignedIn(user){
+  if (currentUser && currentUser.id !== user.id) clearAllEntries(); // switching accounts without an explicit sign-out first
   currentUser = user;
   renderVerifyCard();
   setAddFormEnabled(true);
   addCardNote.textContent = "Any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
-  refreshAllRowsForOwnership();
+  loadEntries();
   verifyMsg.textContent = '';
 }
 function onSignedOut(){
@@ -842,7 +1022,7 @@ function onSignedOut(){
   setAddFormEnabled(false);
   addCardNote.textContent = "Sign in above first, then add any name, any school, anywhere they're from — we'll drop a pin, measure the distance, and link the school's Wikipedia page.";
   if (editingId) cancelEdit();
-  refreshAllRowsForOwnership();
+  clearAllEntries();
 }
 if (SUPABASE_CONFIGURED){
   sb.auth.onAuthStateChange(function(event, session){
@@ -890,6 +1070,7 @@ function renderSchoolEverywhere(s){
   refMeasure.register({ s:s, marker:s._refMarker });
   roster.appendChild(buildRosterRow(s));
   dirBody.appendChild(buildDirectoryRow(s));
+  heatList.appendChild(buildHeatRow(s));
   addToLookupIndex(s);
   renderEmptyStates();
 }
@@ -907,6 +1088,10 @@ function refreshSchoolEverywhere(s){
   var oldDir = document.querySelector('#dir-body [data-id="'+s.id+'"]');
   if (oldDir) oldDir.replaceWith(newDir); else dirBody.appendChild(newDir);
 
+  var newHeat = buildHeatRow(s);
+  var oldHeat = document.querySelector('#heat-list [data-id="'+s.id+'"]');
+  if (oldHeat) oldHeat.replaceWith(newHeat); else heatList.appendChild(newHeat);
+
   addToLookupIndex(s);
 }
 function deleteSchoolEverywhere(s){
@@ -914,7 +1099,7 @@ function deleteSchoolEverywhere(s){
   refMap.removeLayer(s._refMarker);
   var idx = SCHOOLS.indexOf(s);
   if (idx >= 0) SCHOOLS.splice(idx,1);
-  ['#roster','#dir-body'].forEach(function(sel){
+  ['#roster','#dir-body','#heat-list'].forEach(function(sel){
     var el = document.querySelector(sel+' [data-id="'+s.id+'"]');
     if (el) el.remove();
   });
@@ -1018,7 +1203,8 @@ addForm.addEventListener('submit', function(e){
     if (homeLoc !== 'unchanged' && !homeLoc){ addBtn.disabled = !currentUser; addMsg.textContent = 'Couldn’t find "'+homeName+'" on the map.'; return; }
 
     var refPoints = (homeLoc === 'unchanged') ? existing.refPoints : [{ lat:homeLoc.lat, lng:homeLoc.lng, label:homeName }];
-    var changes = { who:name, school:schoolName, city:schoolLoc.label, lat:schoolLoc.lat, lng:schoolLoc.lng, wiki:wikiUrl, refPoints:refPoints };
+    var breaks = schoolUnchanged ? existing.breaks : breaksForSchool(schoolName);
+    var changes = { who:name, school:schoolName, city:schoolLoc.label, lat:schoolLoc.lat, lng:schoolLoc.lng, wiki:wikiUrl, refPoints:refPoints, breaks:breaks };
 
     if (existing){
       var updated = Object.assign({}, existing, changes);
@@ -1056,9 +1242,9 @@ addForm.addEventListener('submit', function(e){
   });
 });
 
-/* ---------- load the shared roster from Supabase ---------- */
+/* ---------- load your own private entries from Supabase (RLS restricts this to your rows only) ---------- */
 function loadEntries(){
-  if (!SUPABASE_CONFIGURED){ renderEmptyStates(); return; }
+  if (!SUPABASE_CONFIGURED || !currentUser){ renderEmptyStates(); return; }
   sb.from('entries').select('*').order('created_at', { ascending:true }).then(function(res){
     if (res.error){ console.error(res.error); renderEmptyStates(); return; }
     (res.data || []).forEach(function(row){
@@ -1071,13 +1257,13 @@ function loadEntries(){
       liveMap.fitBounds(bounds, { padding:[24,24] });
       refMap.fitBounds(bounds, { padding:[30,30] });
     }
+    renderEmptyStates();
     update();
   });
 }
 
 renderVerifyCard();
 setAddFormEnabled(false);
-loadEntries();
 </script>
 </body>
 </html>
