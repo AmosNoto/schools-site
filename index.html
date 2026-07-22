@@ -494,7 +494,9 @@ var COLLEGE_LIST = [
   'University of Rochester','Lehigh University','University of Delaware',
   'James Madison University','Virginia Tech','William & Mary','George Washington University',
   'American University','Howard University','Morehouse College','Spelman College',
-  'Hampton University'
+  'Hampton University','Williams College','Worcester Polytechnic Institute',
+  'Middlebury College','Tulane University','Skidmore College','Bowdoin College',
+  'Bates College','Barnard College','University of Rhode Island'
 ];
 COLLEGE_LIST = COLLEGE_LIST.filter(function(name, idx){ return COLLEGE_LIST.indexOf(name) === idx; }).sort();
 var collegeOptionsEl = document.getElementById('college-options');
@@ -536,6 +538,88 @@ var SCHOOL_BREAKS = {
     { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
     { s:'2026-12-22', e:'2027-01-18', label:'Winter break' },
     { s:'2027-03-15', e:'2027-03-19', label:'Spring break' }
+  ],
+  'williams college': [
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-16', e:'2027-02-03', label:'Winter break' },
+    { s:'2027-03-20', e:'2027-04-04', label:'Spring break' }
+  ],
+  'worcester polytechnic institute': [
+    { s:'2026-11-25', e:'2026-11-27', label:'Thanksgiving' },
+    { s:'2026-12-19', e:'2027-01-12', label:'Winter break' },
+    { s:'2027-03-06', e:'2027-03-14', label:'Spring break' }
+  ],
+  'middlebury college': [
+    { s:'2026-11-20', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-15', e:'2027-01-03', label:'Winter break' },
+    { s:'2027-01-30', e:'2027-02-07', label:'Winter break (post J-term)' },
+    { s:'2027-03-19', e:'2027-03-28', label:'Spring break' }
+  ],
+  'tulane university': [
+    { s:'2026-10-01', e:'2026-10-04', label:'Fall break' },
+    { s:'2026-11-23', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-12', e:'2027-01-10', label:'Winter break' },
+    { s:'2027-02-08', e:'2027-02-09', label:'Mardi Gras (estimated)' },
+    { s:'2027-03-13', e:'2027-03-21', label:'Spring break (estimated)' }
+  ],
+  'skidmore college': [
+    { s:'2026-10-02', e:'2026-10-04', label:'Celebration Weekend' },
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-19', e:'2027-01-25', label:'Winter break' },
+    { s:'2027-03-13', e:'2027-03-21', label:'Spring break' }
+  ],
+  'bowdoin college': [
+    { s:'2026-11-21', e:'2026-11-27', label:'Thanksgiving' },
+    { s:'2026-12-22', e:'2027-01-22', label:'Winter break' },
+    { s:'2027-03-13', e:'2027-03-26', label:'Spring break' }
+  ],
+  'lehigh university': [
+    { s:'2026-10-10', e:'2026-10-12', label:'Fall break' },
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving (estimated)' },
+    { s:'2026-12-17', e:'2027-01-24', label:'Winter break' },
+    { s:'2027-03-13', e:'2027-03-21', label:'Spring break' }
+  ],
+  'university of wisconsin-madison': [
+    { s:'2026-11-26', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-17', e:'2027-01-18', label:'Winter break' },
+    { s:'2027-03-20', e:'2027-03-28', label:'Spring break' }
+  ],
+  'dartmouth college': [
+    { s:'2026-11-21', e:'2027-01-04', label:'Winter break' },
+    { s:'2027-03-17', e:'2027-03-28', label:'Spring break' }
+  ],
+  'bates college': [
+    { s:'2026-10-14', e:'2026-10-18', label:'Fall recess' },
+    { s:'2026-11-21', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-15', e:'2027-01-12', label:'Winter break' },
+    { s:'2027-02-13', e:'2027-02-21', label:'February recess' },
+    { s:'2027-03-17', e:'2027-03-21', label:'March recess' }
+  ],
+  'princeton university': [
+    { s:'2026-10-17', e:'2026-10-25', label:'Fall break' },
+    { s:'2026-11-24', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-22', e:'2027-01-01', label:'Winter break' },
+    { s:'2027-03-06', e:'2027-03-14', label:'Spring break' }
+  ],
+  'columbia university': [
+    { s:'2026-11-25', e:'2026-11-27', label:'Thanksgiving' },
+    { s:'2026-12-23', e:'2027-01-15', label:'Winter break' },
+    { s:'2027-03-15', e:'2027-03-19', label:'Spring break' }
+  ],
+  'barnard college': [
+    { s:'2026-11-25', e:'2026-11-27', label:'Thanksgiving' },
+    { s:'2026-12-23', e:'2027-01-15', label:'Winter break' },
+    { s:'2027-03-15', e:'2027-03-19', label:'Spring break' }
+  ],
+  'university of rhode island': [
+    { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-23', e:'2027-01-25', label:'Winter break' },
+    { s:'2027-03-22', e:'2027-03-28', label:'Spring break' }
+  ],
+  'university of florida': [
+    { s:'2026-11-23', e:'2026-11-28', label:'Thanksgiving' },
+    { s:'2026-12-12', e:'2027-01-10', label:'Winter break' },
+    { s:'2027-03-13', e:'2027-03-20', label:'Spring break' }
   ]
 };
 var ESTIMATED_BREAKS = [
@@ -543,8 +627,23 @@ var ESTIMATED_BREAKS = [
   { s:'2026-12-19', e:'2027-01-11', label:'Winter break (estimated)' },
   { s:'2027-03-13', e:'2027-03-21', label:'Spring break (estimated)' }
 ];
+var SCHOOL_ALIASES = {
+  'wpi':'worcester polytechnic institute', 'nyu':'new york university',
+  'uri':'university of rhode island', 'uf':'university of florida',
+  'uw madison':'university of wisconsin-madison', 'uw-madison':'university of wisconsin-madison',
+  'university of wisconsin':'university of wisconsin-madison', 'wisconsin':'university of wisconsin-madison',
+  'osu':'ohio state university', 'ohio state':'ohio state university',
+  'ucla':'university of california, los angeles',
+  'ut austin':'university of texas at austin', 'university of texas':'university of texas at austin',
+  'ut':'university of texas at austin', 'michigan':'university of michigan', 'umich':'university of michigan',
+  'harvard':'harvard university', 'princeton':'princeton university', 'columbia':'columbia university',
+  'dartmouth':'dartmouth college', 'williams':'williams college', 'middlebury':'middlebury college',
+  'tulane':'tulane university', 'skidmore':'skidmore college', 'bowdoin':'bowdoin college',
+  'lehigh':'lehigh university', 'bates':'bates college', 'barnard':'barnard college'
+};
 function breaksForSchool(schoolName){
   var key = (schoolName || '').trim().toLowerCase();
+  key = SCHOOL_ALIASES[key] || key;
   var known = SCHOOL_BREAKS[key];
   return known ? known.slice() : ESTIMATED_BREAKS.slice();
 }
