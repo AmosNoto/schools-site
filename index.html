@@ -1077,7 +1077,9 @@ function setAddFormEnabled(enabled){
   ['add-name','add-school','add-home'].forEach(function(id){ document.getElementById(id).disabled = !enabled; });
   addBtn.disabled = !enabled;
 }
+var loadGeneration = 0;
 function clearAllEntries(){
+  loadGeneration++; // invalidates any in-flight loadEntries() fetch so a stale response can't repopulate after this
   SCHOOLS.slice().forEach(function(s){
     liveMap.removeLayer(s._marker);
     refMap.removeLayer(s._refMarker);
@@ -1344,7 +1346,9 @@ addForm.addEventListener('submit', function(e){
 function loadEntries(){
   if (!SUPABASE_CONFIGURED || !currentUser){ renderEmptyStates(); return; }
   clearAllEntries(); // always start from a clean slate -- this can be called more than once for the same session (token refresh, etc.)
+  var myGeneration = loadGeneration;
   sb.from('entries').select('*').order('created_at', { ascending:true }).then(function(res){
+    if (myGeneration !== loadGeneration) return; // a newer load call superseded this one in flight -- ignore this stale result
     if (res.error){ console.error(res.error); renderEmptyStates(); return; }
     (res.data || []).forEach(function(row){
       var s = rowToSchool(row);
