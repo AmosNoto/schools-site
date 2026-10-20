@@ -300,6 +300,19 @@
   .heat-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .heat-strip { height: 16px; border-radius: 4px; background: var(--line); position: relative; overflow: hidden; }
   .heat-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); pointer-events: none; }
+  .overlap-row { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
+  .overlap-row[hidden], .overlap-windows[hidden] { display: none; }
+  .overlap-row .heat-strip { height: 22px; }
+  .overlap-windows {
+    background: #fdf7e6; border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 22px;
+  }
+  .overlap-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1rem; margin: 0 0 4px; }
+  .overlap-note { font-size: 0.8rem; color: var(--muted); margin: 0 0 10px; }
+  .overlap-windows .chips { margin-bottom: 0; }
+
+  /* countdown line under each school in the roster */
+  .r-next { font-family: 'Space Mono', monospace; font-size: 0.64rem; color: var(--muted); margin: 3px 0 0 29px; }
 
   footer { padding: 28px 0 48px; }
   footer p { font-size: 0.72rem; color: var(--faint); margin: 0 0 6px; max-width: 78ch; }
@@ -422,8 +435,14 @@
       <button type="button" class="heat-toggle" id="heat-toggle">Invert colors</button>
     </div>
 
+    <div class="overlap-windows" id="overlap-windows" hidden></div>
+
     <div class="heat-scale">
       <span>Sep</span><span>Nov</span><span>Jan</span><span>Mar</span><span>May</span>
+    </div>
+    <div class="heat-row overlap-row" id="overlap-row" hidden>
+      <div class="heat-label"><span><strong>Everyone</strong> · how many are home</span></div>
+      <div class="heat-strip" id="overlap-strip"><div class="heat-playhead" id="overlap-playhead"></div></div>
     </div>
     <div class="heat-list" id="heat-list"></div>
   </section>
@@ -539,8 +558,15 @@ var SCHOOL_BREAKS = {
   ],
   'williams college': [
     { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
-    { s:'2026-12-16', e:'2027-02-03', label:'Winter break' },
+    { s:'2026-12-22', e:'2027-01-04', label:'Winter break' },
+    { s:'2027-01-30', e:'2027-02-02', label:'Break after Winter Study' },
     { s:'2027-03-20', e:'2027-04-04', label:'Spring break' }
+  ],
+  'george washington university': [
+    { s:'2026-10-12', e:'2026-10-13', label:'Fall break' },
+    { s:'2026-11-23', e:'2026-11-28', label:'Thanksgiving' },
+    { s:'2026-12-18', e:'2027-01-10', label:'Winter break' },
+    { s:'2027-03-08', e:'2027-03-13', label:'Spring break' }
   ],
   'worcester polytechnic institute': [
     { s:'2026-11-25', e:'2026-11-27', label:'Thanksgiving' },
@@ -561,15 +587,14 @@ var SCHOOL_BREAKS = {
     { s:'2027-03-13', e:'2027-03-21', label:'Spring break (estimated)' }
   ],
   'skidmore college': [
-    { s:'2026-10-02', e:'2026-10-04', label:'Celebration Weekend' },
     { s:'2026-11-25', e:'2026-11-29', label:'Thanksgiving' },
     { s:'2026-12-19', e:'2027-01-25', label:'Winter break' },
     { s:'2027-03-13', e:'2027-03-21', label:'Spring break' }
   ],
   'bowdoin college': [
-    { s:'2026-11-21', e:'2026-11-27', label:'Thanksgiving' },
-    { s:'2026-12-22', e:'2027-01-22', label:'Winter break' },
-    { s:'2027-03-13', e:'2027-03-26', label:'Spring break' }
+    { s:'2026-11-21', e:'2026-11-29', label:'Thanksgiving' },
+    { s:'2026-12-22', e:'2027-01-24', label:'Winter break' },
+    { s:'2027-03-13', e:'2027-03-28', label:'Spring break' }
   ],
   'lehigh university': [
     { s:'2026-10-10', e:'2026-10-12', label:'Fall break' },
@@ -583,7 +608,7 @@ var SCHOOL_BREAKS = {
     { s:'2027-03-20', e:'2027-03-28', label:'Spring break' }
   ],
   'dartmouth college': [
-    { s:'2026-11-21', e:'2027-01-04', label:'Winter break' },
+    { s:'2026-11-26', e:'2027-01-04', label:'Winter break' },
     { s:'2027-03-17', e:'2027-03-28', label:'Spring break' }
   ],
   'bates college': [
@@ -596,17 +621,17 @@ var SCHOOL_BREAKS = {
   'princeton university': [
     { s:'2026-10-17', e:'2026-10-25', label:'Fall break' },
     { s:'2026-11-24', e:'2026-11-29', label:'Thanksgiving' },
-    { s:'2026-12-22', e:'2027-01-01', label:'Winter break' },
+    { s:'2026-12-23', e:'2027-01-24', label:'Winter break' },
     { s:'2027-03-06', e:'2027-03-14', label:'Spring break' }
   ],
   'columbia university': [
     { s:'2026-11-25', e:'2026-11-27', label:'Thanksgiving' },
-    { s:'2026-12-23', e:'2027-01-15', label:'Winter break' },
+    { s:'2026-12-24', e:'2027-01-18', label:'Winter break' },
     { s:'2027-03-15', e:'2027-03-19', label:'Spring break' }
   ],
   'barnard college': [
     { s:'2026-11-25', e:'2026-11-27', label:'Thanksgiving' },
-    { s:'2026-12-23', e:'2027-01-15', label:'Winter break' },
+    { s:'2026-12-24', e:'2027-01-18', label:'Winter break' },
     { s:'2027-03-15', e:'2027-03-19', label:'Spring break' }
   ],
   'university of rhode island': [
@@ -637,15 +662,27 @@ var SCHOOL_ALIASES = {
   'harvard':'harvard university', 'princeton':'princeton university', 'columbia':'columbia university',
   'dartmouth':'dartmouth college', 'williams':'williams college', 'middlebury':'middlebury college',
   'tulane':'tulane university', 'skidmore':'skidmore college', 'bowdoin':'bowdoin college',
-  'lehigh':'lehigh university', 'bates':'bates college', 'barnard':'barnard college'
+  'lehigh':'lehigh university', 'bates':'bates college', 'barnard':'barnard college',
+  'gw':'george washington university', 'gwu':'george washington university',
+  'george washington':'george washington university'
 };
 function normalizeSchoolKey(schoolName){
   var key = (schoolName || '').trim().toLowerCase();
   return SCHOOL_ALIASES[key] || key;
 }
+// calendars list the days classes are off; you're realistically home through the attached weekend too,
+// so a break ending Fri/Sat runs through Sunday and one starting Monday starts the Saturday before
+function withWeekends(b){
+  var DAY = 86400000;
+  var s = new Date(b.s), e = new Date(b.e);
+  if (s.getUTCDay() === 1) s = new Date(s.getTime() - 2*DAY);
+  if (e.getUTCDay() === 5) e = new Date(e.getTime() + 2*DAY);
+  else if (e.getUTCDay() === 6) e = new Date(e.getTime() + DAY);
+  return { s: s.toISOString().slice(0,10), e: e.toISOString().slice(0,10), label: b.label };
+}
 function breaksForSchool(schoolName){
   var known = SCHOOL_BREAKS[normalizeSchoolKey(schoolName)];
-  return known ? known.slice() : ESTIMATED_BREAKS.slice();
+  return (known || ESTIMATED_BREAKS).map(withWeekends);
 }
 
 /* ---------- real school colors for the schools we know; a stable per-name fallback for everyone else ---------- */
@@ -742,6 +779,26 @@ function inBreak(day, breaks){
   }
   return false;
 }
+// today as a day index on the same UTC-midnight grid the slider uses; may fall outside 0..SPAN off-season
+var now = new Date();
+var TODAY = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+var TODAY_IDX = Math.round((TODAY - START) / 86400000);
+function shortDate(d){
+  return new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', timeZone:'UTC' });
+}
+function nextBreakText(g){
+  var breaks = (g.breaks || []).slice().sort(function(a,b){ return new Date(a.s) - new Date(b.s); });
+  for (var i=0;i<breaks.length;i++){
+    var s = new Date(breaks[i].s), e = new Date(breaks[i].e);
+    var label = breaks[i].label.replace(/\s*\(.*\)$/, '');
+    if (TODAY >= s && TODAY <= e) return 'Home now — '+label+' through '+shortDate(e);
+    if (TODAY < s){
+      var days = Math.round((s - TODAY) / 86400000);
+      return label+' in '+days+(days === 1 ? ' day' : ' days')+' ('+shortDate(s)+')';
+    }
+  }
+  return 'No more breaks this school year';
+}
 
 /* ---------- default distance reference (used only if an entry somehow has none) ---------- */
 var PORTLAND_ME = { lat:43.6591, lng:-70.2568, label:'Portland, ME' };
@@ -778,8 +835,10 @@ function rebuildGroups(){
     var k = schoolKey(s.school);
     if (!map[k]){
       var col = colorsForSchool(s.school);
+      // breaks come from the current calendar data, not what was saved when the entry was added,
+      // so research corrections reach existing entries too
       map[k] = { key:k, school:s.school, lat:s.lat, lng:s.lng, city:s.city, wiki:s.wiki,
-        color:col.color, color2:col.color2, breaks:s.breaks, members:[] };
+        color:col.color, color2:col.color2, breaks:breaksForSchool(s.school), members:[] };
       order.push(k);
     }
     map[k].members.push(s);
@@ -789,6 +848,11 @@ function rebuildGroups(){
 
 /* ---------- school icon + popup helpers (operate on a GROUP: one pin per school) ---------- */
 function diag(c1,c2){ return 'linear-gradient(135deg, '+c1+' 50%, '+c2+' 50%)'; }
+function esc(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
 function milesBetween(a,b){
   var R=3958.8, toRad=function(d){ return d*Math.PI/180; };
   var dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
@@ -801,12 +865,12 @@ function groupPopupHtml(g){
     var whoTxt = m.who==='—' ? 'unassigned' : m.who;
     var points = m.refPoints || [PORTLAND_ME];
     var distTxt = points.map(function(p){ return milesBetween(p,g)+' mi from '+p.label; }).join(' · ');
-    return '<p class="popup-who"><strong>'+whoTxt+'</strong>'+(distTxt ? ' — '+distTxt : '')+'</p>';
+    return '<p class="popup-who"><strong>'+esc(whoTxt)+'</strong>'+(distTxt ? ' — '+esc(distTxt) : '')+'</p>';
   }).join('');
-  return '<div class="popup-school"><i class="popup-sw" style="background:'+diag(g.color,g.color2)+'"></i>'+g.school+'</div>'+
+  return '<div class="popup-school"><i class="popup-sw" style="background:'+diag(g.color,g.color2)+'"></i>'+esc(g.school)+'</div>'+
     memberLines +
-    '<p class="popup-city">'+g.city+'</p>'+
-    '<p class="popup-wiki"><a href="'+g.wiki+'" target="_blank" rel="noopener">Wikipedia ↗</a></p>';
+    '<p class="popup-city">'+esc(g.city)+'</p>'+
+    '<p class="popup-wiki"><a href="'+esc(g.wiki)+'" target="_blank" rel="noopener">Wikipedia ↗</a></p>';
 }
 function hitWrap(hit,size,inner){
   var pad = (hit-size)/2;
@@ -851,7 +915,7 @@ function drawMeasureLine(map, a, b){
   var popup = L.popup({ closeButton:true })
     .setLatLng(mid)
     .setContent(
-      '<div class="popup-school">'+a.school+' → '+b.school+'</div>'+
+      '<div class="popup-school">'+esc(a.school)+' → '+esc(b.school)+'</div>'+
       '<p class="popup-dist">'+straight+' mi straight-line</p>'+
       '<p class="popup-dist" id="'+driveId+'">Calculating driving route…</p>'+
       '<p class="popup-wiki"><a href="#" class="measure-remove">Remove line</a></p>'
@@ -946,7 +1010,7 @@ enablePinchZoom(refMap);
 
 /* ---------- row builders (one school "group" -> one pin + one roster block + one directory block + one heat row) ---------- */
 function rowWhoText(who){
-  return who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : who;
+  return who==='—' ? '<span style="color:var(--faint)">unassigned</span>' : esc(who);
 }
 function ownsEntry(s){
   return !!currentUser && s.ownerId === currentUser.id;
@@ -963,14 +1027,17 @@ function buildRosterGroup(g){
   var head = document.createElement('div'); head.className = 'r-group-head';
   head.innerHTML =
     '<span class="r-num" style="background:'+diag(g.color,g.color2)+'"></span>'+
-    '<span class="r-school">'+g.school+'</span>'+
+    '<span class="r-school">'+esc(g.school)+'</span>'+
     '<span class="r-status">—</span>';
   group.appendChild(head);
+  var next = document.createElement('div'); next.className = 'r-next';
+  next.textContent = nextBreakText(g);
+  group.appendChild(next);
   var members = document.createElement('div'); members.className = 'r-members';
   g.members.forEach(function(m){
     var row = document.createElement('div'); row.className = 'r-member'; row.dataset.id = m.id;
     row.innerHTML =
-      '<span class="r-member-name">'+rowWhoText(m.who)+' <span class="home-city">· '+homeLabelOf(m)+'</span></span>'+
+      '<span class="r-member-name">'+rowWhoText(m.who)+' <span class="home-city">· '+esc(homeLabelOf(m))+'</span></span>'+
       memberActionsHtml(m);
     members.appendChild(row);
   });
@@ -982,15 +1049,15 @@ function buildRosterGroup(g){
 function appendDirectoryGroup(g){
   var co = Math.abs(g.lat).toFixed(2)+'°N, '+Math.abs(g.lng).toFixed(2)+'°W';
   var head = document.createElement('tr'); head.className = 'dir-group-head'; head.dataset.key = g.key;
-  head.innerHTML = '<td colspan="4"><span class="dir-school"><i class="dir-sw" style="background:'+diag(g.color,g.color2)+'"></i>'+g.school+
-    '<span class="dir-coords">— '+g.city+' · '+co+'</span></span></td>';
+  head.innerHTML = '<td colspan="4"><span class="dir-school"><i class="dir-sw" style="background:'+diag(g.color,g.color2)+'"></i>'+esc(g.school)+
+    '<span class="dir-coords">— '+esc(g.city)+' · '+co+'</span></span></td>';
   dirBody.appendChild(head);
   g.members.forEach(function(m){
     var tr = document.createElement('tr'); tr.dataset.id = m.id;
     tr.innerHTML =
       '<td></td>'+
       '<td>'+rowWhoText(m.who)+'</td>'+
-      '<td>'+homeLabelOf(m)+'</td>'+
+      '<td>'+esc(homeLabelOf(m))+'</td>'+
       '<td class="dir-actions">'+memberActionsHtml(m)+'</td>';
     dirBody.appendChild(tr);
   });
@@ -1009,7 +1076,7 @@ function heatGradient(g, invert){
   }
   breaks.forEach(function(b){
     var sp = Math.max(0, Math.min(100, pct(b.s)));
-    var ep = Math.max(0, Math.min(100, pct(b.e + 'T23:59:59')));
+    var ep = Math.max(0, Math.min(100, pct(b.e + 'T23:59:59Z')));
     if (ep <= cursor || sp >= 100) return;
     sp = Math.max(sp, cursor);
     if (sp > cursor) pushStop(onSession, cursor, sp);
@@ -1024,7 +1091,7 @@ function buildHeatRow(g){
   var row = document.createElement('div'); row.className = 'heat-row'; row.dataset.key = g.key;
   var namesTxt = g.members.map(function(m){ return m.who==='—' ? 'unassigned' : m.who; }).join(', ');
   var label = document.createElement('div'); label.className = 'heat-label';
-  label.innerHTML = '<i class="sw" style="background:'+diag(g.color,g.color2)+'"></i><span>'+g.school+' · '+namesTxt+'</span>';
+  label.innerHTML = '<i class="sw" style="background:'+diag(g.color,g.color2)+'"></i><span>'+esc(g.school+' · '+namesTxt)+'</span>';
   var strip = document.createElement('div'); strip.className = 'heat-strip';
   strip.style.background = heatGradient(g, heatInverted);
   var playhead = document.createElement('div'); playhead.className = 'heat-playhead';
@@ -1036,6 +1103,74 @@ function buildHeatRow(g){
 }
 function refreshHeatStrips(){
   GROUPS.forEach(function(g){ if (g._heatStrip) g._heatStrip.style.background = heatGradient(g, heatInverted); });
+}
+
+/* ---------- "when are we all home?": per-day head count across everyone, drawn as a heatmap + best windows ---------- */
+function dailyHomeCounts(){
+  var counts = [];
+  for (var i=0;i<=SPAN;i++){
+    var day = dayToDate(i), c = 0;
+    GROUPS.forEach(function(g){ if (inBreak(day, g.breaks)) c += g.members.length; });
+    counts.push(c);
+  }
+  return counts;
+}
+function overlapGradient(counts, total){
+  var stops = [], runStart = 0;
+  function colorFor(c){ return c === 0 ? '#eee6d6' : 'rgba(200,150,43,'+(0.2 + 0.8*c/total).toFixed(3)+')'; }
+  for (var i=1;i<=counts.length;i++){
+    if (i === counts.length || counts[i] !== counts[runStart]){
+      var col = colorFor(counts[runStart]);
+      stops.push(col+' '+(runStart/counts.length*100)+'%', col+' '+(i/counts.length*100)+'%');
+      runStart = i;
+    }
+  }
+  return 'linear-gradient(to right, '+stops.join(', ')+')';
+}
+function bestWindows(counts){
+  var max = Math.max.apply(null, counts);
+  if (max <= 0) return { max:0, windows:[] };
+  var windows = [], start = -1;
+  for (var i=0;i<=counts.length;i++){
+    if (i < counts.length && counts[i] === max){ if (start < 0) start = i; }
+    else if (start >= 0){ windows.push({ s:start, e:i-1 }); start = -1; }
+  }
+  windows.sort(function(a,b){ return (b.e-b.s) - (a.e-a.s); });
+  windows = windows.slice(0,4).sort(function(a,b){ return a.s - b.s; });
+  return { max:max, windows:windows };
+}
+function renderOverlap(){
+  var total = SCHOOLS.length;
+  var row = document.getElementById('overlap-row');
+  var box = document.getElementById('overlap-windows');
+  if (total < 2){ row.hidden = true; box.hidden = true; return; }
+  var counts = dailyHomeCounts();
+  document.getElementById('overlap-strip').style.background = overlapGradient(counts, total);
+  row.hidden = false;
+
+  var best = bestWindows(counts);
+  box.hidden = false;
+  box.innerHTML = '';
+  var title = document.createElement('p'); title.className = 'overlap-title';
+  var note = document.createElement('p'); note.className = 'overlap-note';
+  if (!best.windows.length){
+    title.textContent = 'No overlap yet';
+    note.textContent = 'Nobody’s breaks line up this year.';
+    box.appendChild(title); box.appendChild(note);
+    return;
+  }
+  title.textContent = best.max === total ? 'Everyone’s home at the same time' : 'Best times to catch the most people';
+  note.textContent = (best.max === total ? 'All '+total : best.max+' of '+total)+' home on these dates — tap one to jump there.';
+  var chips = document.createElement('div'); chips.className = 'chips';
+  best.windows.forEach(function(w){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip';
+    var s = dayToDate(w.s), e = dayToDate(w.e);
+    var days = w.e - w.s + 1;
+    b.textContent = (w.s === w.e ? shortDate(s) : shortDate(s)+' – '+shortDate(e))+' · '+days+(days === 1 ? ' day' : ' days');
+    b.addEventListener('click', function(){ slider.value = w.s; update(); });
+    chips.appendChild(b);
+  });
+  box.appendChild(title); box.appendChild(note); box.appendChild(chips);
 }
 function renderEmptyStates(){
   var rosterEmpty = document.getElementById('roster-empty');
@@ -1113,6 +1248,7 @@ function renderAll(){
     refMap.fitBounds(bounds, { padding:[30,30] });
   }
 
+  renderOverlap();
   renderEmptyStates();
   update();
 }
@@ -1129,6 +1265,10 @@ var CHIPS=[
  ['Winter break','2026-12-28'],
  ['Spring break','2027-03-17']
 ];
+if (TODAY_IDX >= 0 && TODAY_IDX <= SPAN){
+  CHIPS.unshift(['Today', TODAY.toISOString().slice(0,10)]);
+  slider.value = TODAY_IDX;
+}
 var chipsEl=document.getElementById('chips');
 CHIPS.forEach(function(c,idx){
   var b=document.createElement('button'); b.className='chip'; b.textContent=c[0];
@@ -1138,7 +1278,7 @@ CHIPS.forEach(function(c,idx){
 });
 
 function fmtDate(d){
-  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
 }
 
 function update(){
@@ -1156,6 +1296,7 @@ function update(){
     }
     if (g._heatPlayhead) g._heatPlayhead.style.left = playheadPct+'%';
   });
+  document.getElementById('overlap-playhead').style.left = playheadPct+'%';
   roDate.textContent=fmtDate(day);
   roCount.textContent = homeCount+' home';
   document.querySelectorAll('.chip').forEach(function(ch){
@@ -1241,7 +1382,7 @@ function renderVerifyCard(){
     verifyEmailForm.hidden = true;
     verifyTag.textContent = 'Signed in';
     verifyTitle.textContent = 'You can add, edit, or remove your own entries';
-    verifyNote.innerHTML = 'Signed in as <strong>'+currentUser.email+'</strong>. <button type="button" class="lookup-cancel" id="verify-switch-btn" style="padding:0;">Not you? Sign out</button>';
+    verifyNote.innerHTML = 'Signed in as <strong>'+esc(currentUser.email)+'</strong>. <button type="button" class="lookup-cancel" id="verify-switch-btn" style="padding:0;">Not you? Sign out</button>';
     var switchBtn = document.getElementById('verify-switch-btn');
     if (switchBtn) switchBtn.addEventListener('click', function(){ sb.auth.signOut(); });
   } else {
@@ -1408,9 +1549,9 @@ addForm.addEventListener('submit', function(e){
         addBtn.disabled = !currentUser;
         if (res.error){ addMsg.textContent = 'Couldn’t save — try again.'; return; }
         Object.assign(existing, changes);
-        addMsg.textContent = 'Saved.';
         renderAll();
         cancelEdit();
+        addMsg.textContent = 'Saved.';
       });
     } else {
       var s = Object.assign({
